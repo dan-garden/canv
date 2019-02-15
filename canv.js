@@ -98,13 +98,31 @@ class Vector {
 }
 
 class Shape {
+    constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.isFilled = true;
+        this.isStroked = false;
+
+        this.color = new Color(color);
+        this.stroke = new Color(0);
+        this.strokeWidth = 1;
+    }  
     
+    noStroke() {
+        this.isFilled = true;
+        this.isStroked = false;
+    }
+
+    noFill() {
+        this.isFilled = false;
+        this.isStroked = true;
+    }
 }
 
 class Point extends Shape {
     constructor(x, y) {
-        super();
-        this.color = new Color(0);
+        super(x, y);
     }
 
     render(ctx) {
@@ -117,21 +135,16 @@ class Point extends Shape {
 
 class Line extends Shape {
     constructor(x1, y1, x2, y2) {
-        super();
-        this.x1 = x1;
-        this.y1 = y1;
+        super(x1, y1, new Color(0));
         this.x2 = x2;
         this.y2 = y2;
-
-        this.width = 2;
-        this.color = new Color(0);
     }
 
     render(ctx) {
         ctx.beginPath();
-        ctx.lineWidth = this.width;
+        ctx.lineWidth = this.strokeWidth;
         ctx.strokeStyle = this.color.toString();
-        ctx.moveTo(this.x1, this.y1);
+        ctx.moveTo(this.x, this.y);
         ctx.lineTo(this.x2, this.y2);
         ctx.stroke();
         ctx.closePath();
@@ -139,29 +152,10 @@ class Line extends Shape {
 }
 
 class Rect extends Shape {
-    constructor(x, y, w, h, color='black') {
-        super();
-        this.x = x;
-        this.y = y;
+    constructor(x=0, y=0, w=5, h=5, color='black') {
+        super(x, y, color);
         this.width = w;
         this.height = h;
-
-        this.isFilled = true;
-        this.isStroked = false;
-
-        this.color = new Color(color);
-        this.stroke = new Color(0);
-        this.strokeWidth = 1;
-    }
-
-    noStroke() {
-        this.isFilled = true;
-        this.isStroked = false;
-    }
-
-    noFill() {
-        this.isFilled = false;
-        this.isStroked = true;
     }
 
     render(ctx) {
@@ -180,12 +174,39 @@ class Rect extends Shape {
     }
 }
 
+class Circle extends Shape {
+    constructor(x=0, y=0, r=5, color='black') {
+        super(x, y, color);
+        this.radius = r;
+    }
+    render(ctx) {
+        ctx.beginPath();
+        if(this.isStroked) {
+            ctx.lineWidth = this.strokeWidth;
+            ctx.strokeStyle = this.stroke.toString();
+            ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
+            ctx.stroke();
+        }
+
+        if(this.isFilled) {
+            ctx.fillStyle = this.color.toString();
+            ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+        ctx.closePath();
+    }
+}
 
 
 class Painter {
     static random(min, max) {
-        min = Math.ceil(min);
-        max = Math.floor(max);
+        if(arguments.length === 1) {
+            max = Math.floor(min);
+            min = 0;
+        } else if(arguments.length === 2) {
+            min = Math.ceil(min);
+            max = Math.floor(max);
+        }
         return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
@@ -224,7 +245,6 @@ class Painter {
         this.ctx = this.canvas.getContext('2d');
 
         this.$running = false;
-        this.$objects = [];
 
         if (config && typeof config === "object") {
             const configKeys = Object.keys(config);
