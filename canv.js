@@ -101,22 +101,40 @@ class Shape {
     constructor(x, y, color) {
         this.x = x;
         this.y = y;
-        this.isFilled = true;
-        this.isStroked = false;
+        this.showFill = true;
+        this.showStroke = false;
 
         this.color = new Color(color);
         this.stroke = new Color(0);
         this.strokeWidth = 1;
-    }  
+    }
     
     noStroke() {
-        this.isFilled = true;
-        this.isStroked = false;
+        this.showFill = true;
+        this.showStroke = false;
     }
 
     noFill() {
-        this.isFilled = false;
-        this.isStroked = true;
+        this.showFill = false;
+        this.showStroke = true;
+    }
+}
+
+class ShapeGroup {
+    constructor(shapes) {
+        this.shapes = shapes;
+    }
+    
+    set color(x) {
+        this.shapes.forEach(shape => shape.color = x);
+    }
+
+    set strokeWidth(x) {
+        this.shapes.forEach(shape => shape.strokeWidth = x);
+    }
+
+    render(ctx) {
+        this.shapes.forEach(shape => shape.render(ctx));
     }
 }
 
@@ -158,15 +176,21 @@ class Rect extends Shape {
         this.height = h;
     }
 
+    contains(x, y) {
+        return (x > this.x && x < this.x + this.width && y > this.y && y < this.y + this.height);
+        // return true;
+        // return (x > this.x && x < this.x + this.width && y > this.y && y < this.y + this.heigbt);
+    }
+
     render(ctx) {
         ctx.beginPath();
-        if(this.isStroked) {
+        if(this.showStroke) {
             ctx.lineWidth = this.strokeWidth;
             ctx.strokeStyle = this.stroke.toString();
             ctx.strokeRect(this.x, this.y, this.width, this.height);
         }
 
-        if(this.isFilled) {
+        if(this.showFill) {
             ctx.fillStyle = this.color.toString();
             ctx.fillRect(this.x, this.y, this.width, this.height);
         }
@@ -177,20 +201,20 @@ class Rect extends Shape {
 class Circle extends Shape {
     constructor(x=0, y=0, r=5, color='black') {
         super(x, y, color);
-        this.radius = r;
+        this.size = r;
     }
     render(ctx) {
         ctx.beginPath();
-        if(this.isStroked) {
+        if(this.showStroke) {
             ctx.lineWidth = this.strokeWidth;
             ctx.strokeStyle = this.stroke.toString();
-            ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
+            ctx.arc(this.x, this.y, this.size / 2, 0, 2 * Math.PI);
             ctx.stroke();
         }
 
-        if(this.isFilled) {
+        if(this.showFill) {
             ctx.fillStyle = this.color.toString();
-            ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
+            ctx.arc(this.x, this.y, this.size / 2, 0, 2 * Math.PI);
             ctx.fill();
         }
         ctx.closePath();
