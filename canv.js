@@ -28,9 +28,9 @@ class Color {
 
     static random() {
         return new Color(
-            Painter.random(0, 255),
-            Painter.random(0, 255),
-            Painter.random(0, 255)
+            Canv.random(0, 255),
+            Canv.random(0, 255),
+            Canv.random(0, 255)
         )
     }
 
@@ -118,6 +118,11 @@ class Shape {
         this.showFill = false;
         this.showStroke = true;
     }
+
+    setPos(x, y) {
+        this.x = x;
+        this.y = y;
+    }
 }
 
 class ShapeGroup {
@@ -135,6 +140,53 @@ class ShapeGroup {
 
     render(ctx) {
         this.shapes.forEach(shape => shape.render(ctx));
+    }
+}
+
+class Pic extends Shape {
+    constructor(src, x=0, y=0, width, height) {
+        super(x, y, 0);
+        this.image = new Image();
+        this.src = src;
+
+        this.width = width;
+        this.height = height;
+
+
+        this.image.onload = () => {
+            this.loaded = true;
+            if(!this.width) {
+                this.width = this.image.naturalWidth;
+            }
+            if(!this.height) {
+                this.height = this.image.naturalHeight;
+            }
+        };
+    }
+
+    contains(x, y) {
+        return (x > this.x && x < this.x + this.width && y > this.y && y < this.y + this.height);
+    }
+
+    set src(n) {
+        this.image.src = n;
+    }
+
+    render(ctx) {
+        if(!this.loaded) {
+            setTimeout(() => this.render(ctx), 0);
+        } else {
+            ctx.beginPath();
+            if(this.showStroke) {
+                ctx.lineWidth = this.strokeWidth;
+                ctx.strokeStyle = this.stroke.toString();
+                ctx.strokeRect(this.x, this.y, this.width, this.height);
+            }
+            if(this.showFill) {
+                ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
+            }
+            ctx.closePath();
+        }
     }
 }
 
@@ -176,12 +228,6 @@ class Rect extends Shape {
         this.height = h;
     }
 
-    contains(x, y) {
-        return (x > this.x && x < this.x + this.width && y > this.y && y < this.y + this.height);
-        // return true;
-        // return (x > this.x && x < this.x + this.width && y > this.y && y < this.y + this.heigbt);
-    }
-
     render(ctx) {
         ctx.beginPath();
         if(this.showStroke) {
@@ -199,22 +245,35 @@ class Rect extends Shape {
 }
 
 class Circle extends Shape {
-    constructor(x=0, y=0, r=5, color='black') {
+    constructor(x=0, y=0, radius=5, color='black') {
         super(x, y, color);
-        this.size = r;
+        this.size = radius;
     }
+
+    set radius(n) {
+        this.size = n;
+    }
+
+    get radius() {
+        return this.size;
+    }
+
+    contains(x, y) {
+        return ((x - this.x) * (x - this.x) + (y - this.y) * (y - this.y) <= this.radius * this.radius);
+    }
+
     render(ctx) {
         ctx.beginPath();
         if(this.showStroke) {
             ctx.lineWidth = this.strokeWidth;
             ctx.strokeStyle = this.stroke.toString();
-            ctx.arc(this.x, this.y, this.size / 2, 0, 2 * Math.PI);
+            ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
             ctx.stroke();
         }
 
         if(this.showFill) {
             ctx.fillStyle = this.color.toString();
-            ctx.arc(this.x, this.y, this.size / 2, 0, 2 * Math.PI);
+            ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
             ctx.fill();
         }
         ctx.closePath();
@@ -222,7 +281,7 @@ class Circle extends Shape {
 }
 
 
-class Painter {
+class Canv {
     static random(min, max) {
         if(arguments.length === 1) {
             max = Math.floor(min);
@@ -241,23 +300,42 @@ class Painter {
         this.canvas.height = x;
     }
     set setup(x) {
-        this.$setup = x;
+        this.$setup = () => {
+            x();
+        };
     }
     set update(x) {
-        this.$update = x;
+        this.$update = (n) => {
+            x(n);
+        };
     }
     set draw(x) {
-        this.$draw = x;
+        this.$draw = (n) => {
+            x(n);
+        };
+    }
+
+    set background(n) {
+        this.$background = new Color(n);
+        if(this.$background) {
+            let bg = new Rect(0, 0, this.width, this.height);
+            bg.color = this.background;
+            this.add(bg);
+        }
+    }
+
+    get background() {
+        return this.$background;
     }
 
     get width() {
         return this.canvas.width
     }
     get randomWidth() {
-        return Painter.random(0, this.width);
+        return Canv.random(0, this.width);
     }
     get randomHeight() {
-        return Painter.random(0, this.height);
+        return Canv.random(0, this.height);
     }
     get height() {
         return this.canvas.height
@@ -265,10 +343,20 @@ class Painter {
 
 
     constructor(selector, config) {
-        this.canvas = document.querySelector(selector);
+        if(typeof selector === "object") {
+            config = selector;
+            this.canvas = document.createElement("canvas");
+        } else {
+            this.canvas = document.querySelector(selector);
+        }
         this.ctx = this.canvas.getContext('2d');
 
+        this.frames = 0;
         this.$running = false;
+
+        this.width = 100;
+        this.height = 100;
+        this.background = new Color("white");
 
         if (config && typeof config === "object") {
             const configKeys = Object.keys(config);
@@ -324,8 +412,9 @@ class Painter {
 
     loop() {
         if (this.$running) {
-            if (this.$update) this.$update();
-            if (this.$draw) this.$draw();
+            this.frames++;
+            if (this.$update) this.$update(this.frames);
+            if (this.$draw) this.$draw(this.frames);
             requestAnimationFrame(this.loop.bind(this));
         }
     }
