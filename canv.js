@@ -210,6 +210,37 @@ class Line extends Shape {
         this.y2 = y2;
     }
 
+    get x1() {
+        return this.x;
+    }
+
+    get y1() {
+        return this.y;
+    }
+
+    set width(n) {
+        this.strokeWidth = n;
+    }
+
+    get width() {
+        return this.strokeWidth;
+    }
+
+    set size(n) {
+        this.strokeWidth = n;
+    }
+
+    get size() {
+        return this.strokeWidth;
+    }
+
+    get length() {
+        return new Vector(
+            this.x2 - this.x1,
+            this.y2 - this.y1
+        );
+    }
+
     render(ctx) {
         ctx.beginPath();
         ctx.lineWidth = this.strokeWidth;
@@ -343,10 +374,12 @@ class Canv {
 
 
     constructor(selector, config) {
+        let noSelector = true;
         if(typeof selector === "object") {
             config = selector;
             this.canvas = document.createElement("canvas");
         } else {
+            noSelector = false;
             this.canvas = document.querySelector(selector);
         }
         this.ctx = this.canvas.getContext('2d');
@@ -371,6 +404,10 @@ class Canv {
 
         this.binds();
         this.start();
+
+        if(noSelector) {
+            return this.canvas;
+        }
     }
 
     binds() {
@@ -405,9 +442,19 @@ class Canv {
     }
 
     start() {
-        this.$running = true;
-        if (this.$setup) this.$setup();
-        if (this.$update || this.$draw) requestAnimationFrame(this.loop.bind(this));
+        if(!this.$running) {
+            this.$running = true;
+            if (this.$setup) this.$setup();
+            if (this.$update || this.$draw) requestAnimationFrame(this.loop.bind(this));
+        }
+        return this;
+    }
+
+    stop() {
+        if(this.$running) {
+            this.$running = false;
+        }
+        return this;
     }
 
     loop() {
