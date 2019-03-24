@@ -138,6 +138,18 @@ class ShapeGroup {
         this.shapes.forEach(shape => shape.strokeWidth = x);
     }
 
+    set stroke(x) {
+        this.shapes.forEach(shape => shape.stroke = x);
+    }
+
+    noStroke() {
+        this.shapes.forEach(shape => shape.noStroke());
+    }
+
+    noFill() {
+        this.shapes.forEach(shape => shape.noFill());
+    }
+
     render(ctx) {
         this.shapes.forEach(shape => shape.render(ctx));
     }
