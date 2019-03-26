@@ -1,4 +1,6 @@
 const sketches = [
+    "Images",
+    "Snake",
     "3D",
     "DrawingGame",
     "RainbowWave"

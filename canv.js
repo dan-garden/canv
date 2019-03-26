@@ -123,6 +123,11 @@ class Shape {
         this.x = x;
         this.y = y;
     }
+
+    setDimensions(w, h) {
+        this.width = w;
+        this.height = h;
+    }
 }
 
 class ShapeGroup {
@@ -449,7 +454,13 @@ class Canv {
             this.mouseDown = false;
         });
 
-        
+        window.addEventListener("keyup", e => {
+            // this.keyDown = undefined;
+        });
+
+        window.addEventListener("keypress", e => {
+            this.keyDown = e.key;
+        })
 
     }
 
@@ -479,7 +490,25 @@ class Canv {
     }
 
 
-
+    get pixels() {
+        const px = [];
+        const data = this.ctx.getImageData(0, 0, this.width, this.height).data;
+        const l = this.width * this.height;
+        for (let i = 0; i < l; i++) {
+            let r = data[i*4]; // Red
+            let g = data[i*4+1]; // Green
+            let b = data[i*4+2]; // Blue
+            let a = data[i*4+3]; // Alpha
+            let y = parseInt(i / this.width, 10);
+            if(!px[y]) {
+                px[y] = [];
+            }
+            let x = i - y * this.width;
+            let color = new Color(r, g, b, a);
+            px[y][x] = color;
+        }
+        return px;
+    }
 
 
     setDimensions(w, h) {
