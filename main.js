@@ -1,4 +1,6 @@
 const sketches = [
+    "2048",
+    "FlappyBird",
     "Images",
     "Snake",
     "3D",
@@ -10,7 +12,7 @@ let currentlyLoaded = false;
 const loadedSketches = {};
 
 function load(name) {
-    fetch(`sketches/${name}.js`)
+    fetch(`sketches/${name}.js?d=`+new Date())
         .then(result => result.text())
         .then(result => {
             if (currentlyLoaded) {

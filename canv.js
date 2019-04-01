@@ -158,6 +158,20 @@ class ShapeGroup {
     render(ctx) {
         this.shapes.forEach(shape => shape.render(ctx));
     }
+
+    contains(x, y) {
+        return this.shapes.map(shape => {
+            return shape.contains ? shape.contains(x, y) : false
+        }).some(contains => contains == true);
+    }
+
+    moveX(n) {
+        this.shapes.forEach(s => (s.x+=n) && (s.x2 ? s.x2 += n : null))
+    }
+
+    moveY(n) {
+        this.shapes.forEach(s => (s.y+=n) && (s.y2 ? s.y2 += n : null))
+    }
 }
 
 class Pic extends Shape {
@@ -258,6 +272,10 @@ class Line extends Shape {
         );
     }
 
+    contains(x, y) {
+        return false;
+    }
+
     render(ctx) {
         ctx.beginPath();
         ctx.lineWidth = this.strokeWidth;
@@ -289,6 +307,10 @@ class Rect extends Shape {
             ctx.fillRect(this.x, this.y, this.width, this.height);
         }
         ctx.closePath();
+    }
+
+    contains(x, y) {
+        return (x > this.x && x < this.x + this.width && y > this.y && y < this.y + this.height);
     }
 }
 
@@ -323,6 +345,41 @@ class Circle extends Shape {
             ctx.fillStyle = this.color.toString();
             ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
             ctx.fill();
+        }
+        ctx.closePath();
+    }
+}
+
+class Text extends Shape {
+    constructor(string="undefined", x=0, y=0, fontSize=20) {
+        super(x, y, 0);
+
+        this.string = string;
+
+        this.textAlign = "left";
+        this.fontSize = fontSize;
+        this.fontFamily = "Comic Sans MS";
+    }
+
+    get font() {
+        return `${this.fontSize}px ${this.fontFamily}`;
+    }
+
+    render(ctx) {
+        ctx.beginPath();
+        ctx.textAlign = this.textAlign;
+        ctx.font = this.font;
+
+
+        if(this.showStroke) {
+            ctx.lineWidth = this.strokeWidth;
+            ctx.strokeStyle = this.stroke.toString();
+            ctx.strokeText(this.string, this.x, this.y);
+        }
+
+        if(this.showFill) {
+            ctx.fillStyle = this.color.toString();
+            ctx.fillText(this.string, this.x, this.y);
         }
         ctx.closePath();
     }
@@ -455,7 +512,7 @@ class Canv {
         });
 
         window.addEventListener("keyup", e => {
-            // this.keyDown = undefined;
+            this.keyDown = undefined;
         });
 
         window.addEventListener("keypress", e => {
@@ -510,10 +567,17 @@ class Canv {
         return px;
     }
 
-
     setDimensions(w, h) {
         this.width = w;
         this.height = h;
+    }
+
+    halfWidth(n) {
+        return n ? (this.width / 2) - (n / 2) : this.width / 2
+    }
+
+    halfHeight(n) {
+        return n ? (this.height / 2) - (n / 2) : this.height / 2
     }
 
     clear(x = 0, y = 0, w = this.width, h = this.height) {
