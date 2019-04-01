@@ -128,49 +128,57 @@ class Shape {
         this.width = w;
         this.height = h;
     }
+
+    setColor(n) {
+        this.color = new Color(n);
+        return this;
+    }
 }
 
 class ShapeGroup {
     constructor(shapes) {
+        Object.keys(shapes).forEach(shapeKey => {
+            this[shapeKey] = shapes[shapeKey];
+        })
         this.shapes = shapes;
     }
     
     set color(x) {
-        this.shapes.forEach(shape => shape.color = x);
+        Object.values(this.shapes).forEach(shape => shape.color = x);
     }
 
     set strokeWidth(x) {
-        this.shapes.forEach(shape => shape.strokeWidth = x);
+        Object.values(this.shapes).forEach(shape => shape.strokeWidth = x);
     }
 
     set stroke(x) {
-        this.shapes.forEach(shape => shape.stroke = x);
+        Object.values(this.shapes).forEach(shape => shape.stroke = x);
     }
 
     noStroke() {
-        this.shapes.forEach(shape => shape.noStroke());
+        Object.values(this.shapes).forEach(shape => shape.noStroke());
     }
 
     noFill() {
-        this.shapes.forEach(shape => shape.noFill());
+        Object.values(this.shapes).forEach(shape => shape.noFill());
     }
 
     render(ctx) {
-        this.shapes.forEach(shape => shape.render(ctx));
+        Object.values(this.shapes).forEach(shape => shape.render(ctx));
     }
 
     contains(x, y) {
-        return this.shapes.map(shape => {
+        return Object.values(this.shapes).map(shape => {
             return shape.contains ? shape.contains(x, y) : false
         }).some(contains => contains == true);
     }
 
     moveX(n) {
-        this.shapes.forEach(s => (s.x+=n) && (s.x2 ? s.x2 += n : null))
+        Object.values(this.shapes).forEach(s => (s.x+=n) && (s.x2 ? s.x2 += n : null))
     }
 
     moveY(n) {
-        this.shapes.forEach(s => (s.y+=n) && (s.y2 ? s.y2 += n : null))
+        Object.values(this.shapes).forEach(s => (s.y+=n) && (s.y2 ? s.y2 += n : null))
     }
 }
 
