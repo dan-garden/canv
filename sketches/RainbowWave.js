@@ -7,6 +7,7 @@ new Canv('canvas', {
     t_step: 1 / 20,
     tmp: 0,
     setup() {
+        this.setFrameDelay(100);
         this.resize();
         window.addEventListener("resize", e => this.resize());
     },

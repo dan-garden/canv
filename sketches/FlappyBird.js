@@ -51,17 +51,19 @@ const game = new Canv('canvas', {
             this.shapes = [this.main, this.lip];
         }
     },
+
     setup() {
         this.bird = new this.Bird(20, this.halfHeight(30), 20);
         this.pipes = [];
+        this.setDrawDelay(5);
     },
 
     update() {
-        // if(this.keyDown === " ") {
-        //     this.bird.moveY(-5);
-        // } else {
-        //     this.bird.moveY(3);
-        // }
+        if(this.keyDown(" ")) {
+            this.bird.moveY(-5);
+        } else {
+            this.bird.moveY(3);
+        }
         
         if(this.frames === 1 || this.frames % 80 === 0) {
             this.gap = Canv.random(20, 150);

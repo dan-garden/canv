@@ -104,6 +104,8 @@ class Shape {
         this.showFill = true;
         this.showStroke = false;
 
+        this.angle = 0;
+
         this.color = new Color(color);
         this.stroke = new Color(0);
         this.strokeWidth = 1;
@@ -133,6 +135,20 @@ class Shape {
         this.color = new Color(n);
         return this;
     }
+
+    renderRotation(ctx) {
+        let w=this.width,
+            h=this.height,
+            x=this.x,
+            y=this.y;
+
+        if(this.angle) {
+            ctx.translate(x+w/2,y+h/2);
+            ctx.rotate(this.angle*(Math.PI/180));
+            ctx.translate(-(x+w/2),-(y+h/2));
+        }
+    }
+    
 }
 
 class ShapeGroup {
@@ -180,6 +196,10 @@ class ShapeGroup {
     moveY(n) {
         Object.values(this.shapes).forEach(s => (s.y+=n) && (s.y2 ? s.y2 += n : null))
     }
+
+    rotate(n) {
+        Object.values(this.shapes).forEach(shape => shape.angle+=n);
+    }
 }
 
 class Pic extends Shape {
@@ -215,7 +235,9 @@ class Pic extends Shape {
         if(!this.loaded) {
             setTimeout(() => this.render(ctx), 0);
         } else {
+            ctx.save();
             ctx.beginPath();
+            this.renderRotation(ctx);
             if(this.showStroke) {
                 ctx.lineWidth = this.strokeWidth;
                 ctx.strokeStyle = this.stroke.toString();
@@ -225,6 +247,7 @@ class Pic extends Shape {
                 ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
             }
             ctx.closePath();
+            ctx.restore();
         }
     }
 }
@@ -303,7 +326,9 @@ class Rect extends Shape {
     }
 
     render(ctx) {
+        ctx.save();
         ctx.beginPath();
+        this.renderRotation(ctx);
         if(this.showStroke) {
             ctx.lineWidth = this.strokeWidth;
             ctx.strokeStyle = this.stroke.toString();
@@ -315,6 +340,7 @@ class Rect extends Shape {
             ctx.fillRect(this.x, this.y, this.width, this.height);
         }
         ctx.closePath();
+        ctx.restore();
     }
 
     contains(x, y) {
@@ -469,9 +495,14 @@ class Canv {
         this.frames = 0;
         this.$running = false;
 
+        this.$updateDelay = 0;
+        this.$drawDelay = 0;
+
+        this.keysDown = {};
+
         this.width = 100;
         this.height = 100;
-        this.background = new Color("white");
+        this.background = new Color(255);
 
         if (config && typeof config === "object") {
             const configKeys = Object.keys(config);
@@ -520,11 +551,15 @@ class Canv {
         });
 
         window.addEventListener("keyup", e => {
-            this.keyDown = undefined;
+            if(this.keysDown[e.key]) {
+                delete this.keysDown[e.key];
+            }
         });
 
-        window.addEventListener("keypress", e => {
-            this.keyDown = e.key;
+        window.addEventListener("keydown", e => {
+            if(!this.keysDown[e.key]) {
+                this.keysDown[e.key] = true;
+            }
         })
 
     }
@@ -538,6 +573,10 @@ class Canv {
         return this;
     }
 
+    keyDown(key) {
+        return this.keysDown[key];
+    }
+
     stop() {
         if(this.$running) {
             this.$running = false;
@@ -548,9 +587,29 @@ class Canv {
     loop() {
         if (this.$running) {
             this.frames++;
-            if (this.$update) this.$update(this.frames);
-            if (this.$draw) this.$draw(this.frames);
+            if(this.$update && (this.$updateDelay===0 || this.frames%this.$updateDelay===0)) {
+                if (this.$update) this.$update(this.frames);
+            }
+            if(this.$draw && (this.$drawDelay===0 || this.frames%this.$drawDelay===0)) {
+                if (this.$draw) this.$draw(this.frames);
+            }
             requestAnimationFrame(this.loop.bind(this));
+        }
+    }
+
+    set updateDelay(delay) {
+        if(typeof delay === "number" && delay > 0) {
+            this.$updateDelay = delay;
+        } else {
+            this.$updateDelay = 0;
+        }
+    }
+
+    set drawDelay(delay) {
+        if(typeof delay === "number" && delay > 0) {
+            this.$drawDelay = delay;
+        } else {
+            this.$drawDelay = 0;
         }
     }
 
