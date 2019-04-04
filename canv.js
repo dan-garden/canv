@@ -108,6 +108,7 @@ class Shape {
 
         this.color = new Color(color);
         this.stroke = new Color(0);
+        this.dash = [];
         this.strokeWidth = 1;
     }
     
@@ -161,6 +162,11 @@ class ShapeGroup {
     
     set color(x) {
         Object.values(this.shapes).forEach(shape => shape.color = x);
+    }
+
+    setColor(x) {
+        Object.values(this.shapes).forEach(shape => shape.color = x);
+        return this;
     }
 
     set strokeWidth(x) {
@@ -268,8 +274,16 @@ class Point extends Shape {
 class Line extends Shape {
     constructor(x1, y1, x2, y2) {
         super(x1, y1, new Color(0));
-        this.x2 = x2;
-        this.y2 = y2;
+
+        if(x1 instanceof Vector && y1 instanceof Vector) {
+            this.x = x1.x;
+            this.y = x1.y;
+            this.x2 = y1.x;
+            this.y2 = y1.y;
+        } else {
+            this.x2 = x2;
+            this.y2 = y2;
+        }
     }
 
     get x1() {
@@ -381,6 +395,52 @@ class Circle extends Shape {
             ctx.fill();
         }
         ctx.closePath();
+    }
+}
+
+class Triangle extends Shape {
+    constructor(x1, y1, x2, y2, x3, y3) {
+        super(x1, y1, new Color(0));
+        this.x2 = x2;
+        this.y2 = y2;
+        this.x3 = y3;
+        this.y3 = y3;
+    }
+
+    get x1() {
+        return this.x;
+    }
+
+    get y1() {
+        return this.y;
+    }
+
+    contains(x, y) {
+        return false;
+    }
+
+    render(ctx) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(this.x1, this.y1);
+        ctx.lineTo(this.x2, this.y2);
+        ctx.lineTo(this.x3, this.y3);
+        if(this.showStroke) {
+            ctx.lineWidth = this.strokeWidth;
+            if(this.dash.length > 0) {
+                ctx.setLineDash(this.dash);
+            }
+            ctx.strokeStyle = this.stroke.toString();
+            ctx.lineTo(this.x1, this.y1);
+            ctx.stroke();
+        }
+
+        if(this.showFill) {
+            ctx.fillStyle = this.color.toString();
+            ctx.fill();
+        }
+        ctx.closePath();
+        ctx.restore();
     }
 }
 

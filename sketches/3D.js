@@ -1,32 +1,25 @@
-new Canv('canvas', {
-    x: 100,
-    y: 100,
-    w: 100,
-    h: 100,
-    setup() {
-        this.resize();
-        window.addEventListener("resize", e => this.resize());
-    },
-    resize() {
-        this.width = document.body.clientWidth;
-        this.height = document.body.clientHeight - 3;
-    },
-    draw() {
-        this.clear();
-        const cube = new ShapeGroup([
-            new Rect(this.x, this.y, this.w, this.h),
-            new Rect(this.x+(this.w/2), this.y+(this.h/2), this.w, this.h),
-
-            new Line(this.x, this.y, this.x+(this.w/2), this.y+(this.h/2)),
-            new Line(this.x+this.w, this.y+this.h, this.x+this.w+(this.w/2), this.y+this.h+(this.h/2)),
-            new Line(this.x+this.w, this.y, this.x+(this.w/2)+this.w, this.y+(this.h/2)),
-            new Line(this.x, this.y+this.h, this.x+(this.w/2), this.y+(this.h/2)+this.h)
+const note = new Canv('canvas', {
+    width: 300,
+    height: 300,
+    move: 0,
+    setup() {      
+        this.pyramid = new ShapeGroup([
+            new Triangle(0,230,250,100,0,220),
+            new Triangle(100,0,0,230,0,220),
+            new Triangle(100,0,250,100,0,220)
         ]);
 
-        cube.color = "orange";
-        cube.stroke = "orange";
-        cube.noFill();
+        this.pyramid.noFill();
+        this.moveMax = this.width * 2;
+    },
 
-        this.add(cube);
+    update() {
+        this.move++;
+        this.pyramid.moveY((this.move % this.moveMax >= (this.moveMax/2)) ? -1 : 1)
+    },
+
+    draw() {
+        this.clear();
+        this.add(this.pyramid);
     }
-});
+})

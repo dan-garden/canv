@@ -4,10 +4,10 @@ new Canv('canvas', {
     paddleWidth: 20,
     paddleHeight: 100,
     setup() {
-        this.player1 = new Rect(0, this.halfHeight(this.paddleHeight), this.paddleWidth, this.paddleHeight);
+        this.player1 = new Rect(10, this.halfHeight(this.paddleHeight), this.paddleWidth, this.paddleHeight);
         this.player1.color = new Color(255);
 
-        this.player2 = new Rect(this.width-this.paddleWidth, this.halfHeight(this.paddleHeight), this.paddleWidth, this.paddleHeight);
+        this.player2 = new Rect(this.width-this.paddleWidth-10, this.halfHeight(this.paddleHeight), this.paddleWidth, this.paddleHeight);
         this.player2.color = new Color(255);
     },
 
@@ -22,6 +22,7 @@ new Canv('canvas', {
                 this.player1.y += 3;
             }
         }
+
     },
 
     draw() {
