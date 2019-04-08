@@ -2,6 +2,7 @@ const game = new Canv('canvas', {
     width: 400,
     height: 400,
     gap: 100,
+    points: 0,
     Bird: class Bird extends ShapeGroup {
         constructor(x, y, birdSize) {
             super([]);
@@ -14,14 +15,7 @@ const game = new Canv('canvas', {
 
             this.beak = new Rect(x+10, y, 20, 10);
             this.beak.color = "orange";
-
-            this.beakline = new Line(
-                this.beak.x,
-                this.beak.y + (this.beak.height / 2),
-                this.beak.x + this.beak.width,
-                this.beak.y + (this.beak.height / 2)
-            );
-            this.shapes = [this.body, this.eye, this.beak, this.beakline];
+            this.shapes = [this.body, this.eye, this.beak];
         }
     },
     Pipe: class Pipe extends ShapeGroup {
@@ -55,7 +49,6 @@ const game = new Canv('canvas', {
     setup() {
         this.bird = new this.Bird(20, this.halfHeight(30), 20);
         this.pipes = [];
-        this.setDrawDelay(5);
     },
 
     update() {
@@ -65,7 +58,7 @@ const game = new Canv('canvas', {
             this.bird.moveY(3);
         }
         
-        if(this.frames === 1 || this.frames % 80 === 0) {
+        if(this.frames === 1 || this.frames % 10 === 0) {
             this.gap = Canv.random(20, 150);
 
             const top = new this.Pipe("top", (this.height/2)-this.gap, this.width, this.height);
@@ -76,6 +69,7 @@ const game = new Canv('canvas', {
         for(let i = this.pipes.length-1; i >= 0; i--) {
             if(this.pipes[i].shapes[0].x < -this.pipes[i].width) {
                 this.pipes.splice(i, 1);
+                this.points += 0.5;
             } else {
                 this.pipes[i].moveX(-2);
             }
@@ -86,5 +80,6 @@ const game = new Canv('canvas', {
         this.background = new Color(160, 210, 255);
         this.pipes.forEach(pipe => this.add(pipe));
         this.add(this.bird);
+        this.add(new Text(this.points, 0, 15))
     }
 })

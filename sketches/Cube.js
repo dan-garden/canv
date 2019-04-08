@@ -78,6 +78,6 @@ const c = new Canv('canvas', {
         this.clear();
 
 
-        // this.add(new ShapeGroup(cells));
+        this.add(new ShapeGroup(cells));
     }
 });

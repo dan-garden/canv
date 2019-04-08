@@ -72,12 +72,26 @@ class Color {
             this.b = arguments[2];
             this.a = arguments[3];
         }
+
+
+
+        if(this.r > 255) { this.r=255; }
+        if(this.g > 255) { this.g=255; }
+        if(this.b > 255) { this.b=255; }
+        
+        if(this.r < 0) { this.r=0; }
+        if(this.g < 0) { this.g=0; }
+        if(this.b < 0) { this.b=0; }
     }
 
     toString(type="rgba") {
         return type=="rgba"
             ?`rgba(${this.r}, ${this.g}, ${this.b}, ${this.a})`
             :`rgb(${this.r}, ${this.g}, ${this.b})`
+    }
+
+    shade(n) {
+        return new Color(this.r+n, this.g+n, this.b+n);
     }
 
     randomize() {
@@ -137,6 +151,14 @@ class Shape {
         return this;
     }
 
+    moveX(n) {
+        this.x += n;
+    }
+
+    moveY(n) {
+        this.y += n;
+    }
+
     renderRotation(ctx) {
         let w=this.width,
             h=this.height,
@@ -153,7 +175,7 @@ class Shape {
 }
 
 class ShapeGroup {
-    constructor(shapes) {
+    constructor(shapes=[]) {
         Object.keys(shapes).forEach(shapeKey => {
             this[shapeKey] = shapes[shapeKey];
         })
@@ -195,12 +217,17 @@ class ShapeGroup {
         }).some(contains => contains == true);
     }
 
+    add(n) {
+        this.shapes.push(n);
+        
+    }
+
     moveX(n) {
-        Object.values(this.shapes).forEach(s => (s.x+=n) && (s.x2 ? s.x2 += n : null))
+        Object.values(this.shapes).forEach(s => s.moveX(n))
     }
 
     moveY(n) {
-        Object.values(this.shapes).forEach(s => (s.y+=n) && (s.y2 ? s.y2 += n : null))
+        Object.values(this.shapes).forEach(s => s.moveY(n))
     }
 
     rotate(n) {
@@ -403,7 +430,7 @@ class Triangle extends Shape {
         super(x1, y1, new Color(0));
         this.x2 = x2;
         this.y2 = y2;
-        this.x3 = y3;
+        this.x3 = x3;
         this.y3 = y3;
     }
 
@@ -622,6 +649,16 @@ class Canv {
             }
         })
 
+
+        if(this.fullscreen) {
+            this.resize();
+            window.addEventListener("resize", e => this.resize());
+        }
+    }
+
+    resize() {
+        this.width = document.body.clientWidth;
+        this.height = document.body.clientHeight - 3;
     }
 
     start() {

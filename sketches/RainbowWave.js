@@ -6,14 +6,9 @@ new Canv('canvas', {
     t: 0,
     t_step: 1 / 20,
     tmp: 0,
+    fullscreen: true,
     setup() {
         this.setFrameDelay(100);
-        this.resize();
-        window.addEventListener("resize", e => this.resize());
-    },
-    resize() {
-        this.width = document.body.clientWidth;
-        this.height = document.body.clientHeight - 3;
     },
     rand(min, max) {
         const b = (max === 0 || max) ? max : 1,
