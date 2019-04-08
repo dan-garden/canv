@@ -23,7 +23,7 @@ const graph = new Canv('canvas', {
 
     draw() {
         this.clear();
-        const bounds = new Rect(50, 50, 400, 400);
+        const bounds = new Rect(0, 10, this.width, this.height-10);
         bounds.noFill();
         this.add(bounds);
 
@@ -32,13 +32,13 @@ const graph = new Canv('canvas', {
             let g = 20;
             let w = (bounds.width / len) - g;
             let h;
-            if(field.animating && field.animating < (field.number) * (this.data.inc * 2)) {
+            if(field.animating && field.animating < (field.number) * (bounds.height / 40)) {
                 field.animating += this.data.inc;
                 h = field.animating;
             } else {
-                h = field.number * (this.data.inc * 2);
+                h = field.number * (bounds.height / 40);
             }
-            let x = (g / 2) + bounds.x + (i * (w + g));
+            let x = (g / 4) + bounds.x + (i * (w + g));
             let y = (bounds.height + bounds.y) - h;
             let c = field.color;
             const s = 10;
