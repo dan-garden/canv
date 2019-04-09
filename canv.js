@@ -153,10 +153,17 @@ class Shape {
 
     moveX(n) {
         this.x += n;
+        return this;
     }
 
     moveY(n) {
         this.y += n;
+        return this;
+    }
+
+    rotate(n) {
+        this.angle = n;
+        return this;
     }
 
     renderRotation(ctx) {
@@ -471,6 +478,85 @@ class Triangle extends Shape {
     }
 }
 
+class BarGraph extends ShapeGroup {
+    constructor(config) {
+        super({
+            bounds: config.bounds,
+            steps: new ShapeGroup,
+            bars: new ShapeGroup,
+        });
+        this.label = config.label || "No Label";
+        this.inc = config.inc || 1;
+        this.gap = config.gap===undefined?20:config.gap;
+        this.shadow = config.shadow===undefined?2:config.shadow;
+        this.lines = config.lines===undefined?true:config.lines;
+        this.fields = config.fields || [];
+        this.max = config.max===undefined?"calc":config.max;
+
+
+        this.update();
+    }
+
+    update() {
+        this.highest = this.max==="calc"?Math.max(...this.fields.map(f=>f.number)):this.max;
+
+        this.steps.shapes = [];
+        this.bars.shapes = [];
+        this.bounds.showStroke = false;
+        this.bounds.showFill = false;
+        const len = this.fields.length;
+        const step = this.bounds.height / (this.highest / (this.inc));
+        let j = 0;
+        for(let i = 0; i <= this.highest; i+=this.inc) {
+            let stepShape = new ShapeGroup;
+            let stepLabel = new Text(
+                i,
+                this.bounds.x-30,
+                this.bounds.y + this.bounds.height - ((j * step))
+            ).setSize(12).setFont("Verdana");
+            stepShape.add(stepLabel);
+
+            let stepMarker = new Rect(
+                stepLabel.x+20,
+                stepLabel.y,
+                10,
+                1
+            );
+            stepShape.add(stepMarker);
+
+            if(this.lines) {
+                let stepLine = new Rect(
+                    stepMarker.x,
+                    stepMarker.y,
+                    this.bounds.width+20,
+                    1
+                ).setColor(200);
+                stepShape.add(stepLine);
+            }
+
+
+            this.steps.add(stepShape);
+            j++;
+        }
+
+        this.fields.map((field, i) => {
+            let g = this.gap;
+            let w = (this.bounds.width / len) - g;
+            let h = field.number * (this.bounds.height / this.highest);
+            let x = (g / 2) + this.bounds.x + (i * (w + g));
+            let y = (this.bounds.height + this.bounds.y) - h;
+            let c = field.color;
+            const s = this.shadow;
+            const bar = new ShapeGroup({
+                shadow: new Rect(x+s, y-s, w, h+s).setColor(c.shade(-100)),
+                bar: new Rect(x, y, w, h).setColor(c),
+                text: new Text(field.label, x, y-2-s).setSize(12).setFont("Verdana"),
+            });
+            this.bars.add(bar);
+        });
+    }
+}
+
 class Text extends Shape {
     constructor(string="undefined", x=0, y=0, fontSize=20) {
         super(x, y, 0);
@@ -486,12 +572,26 @@ class Text extends Shape {
         return `${this.fontSize}px ${this.fontFamily}`;
     }
 
+    setSize(n) {
+        this.fontSize = n;
+        return this;
+    }
+
+    setFont(n) {
+        this.fontFamily = n;
+        return this;
+    }
+
+    setAlign(n) {
+        this.textAlign = n;
+        return this;
+    }
+
     render(ctx) {
         ctx.beginPath();
         ctx.textAlign = this.textAlign;
         ctx.font = this.font;
-
-
+        this.renderRotation(ctx);
         if(this.showStroke) {
             ctx.lineWidth = this.strokeWidth;
             ctx.strokeStyle = this.stroke.toString();
