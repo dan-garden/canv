@@ -2,17 +2,41 @@ const td = new Canv('canvas', {
     fullscreen: true,
     setup() {
         this.clicked = false;
+        this.level = false;
+        this.editor = false;
+        this.playing = false;
+        this.player = {
+            speed: 1,
+            lives: 100,
+        };
 
-        this.speed = 1;
-        this.bg = new Pic(
-            "images/BTDMap.webp",
+        this.loadLevel(0);
+    },
+
+    loadLevel(id) {
+        fetch(`levels/${id}/meta.json`)
+            .then(result => result.json())
+            .then(level => {
+                this.level = level;
+                this.setupLevel(id);
+            })
+    },
+
+    setupLevel(id) {
+        this.level.balloons = [];
+
+        this.level.background = new Pic(
+            `levels/${id}/${this.level.background}`,
             0, 0,
-            this.width, this.height
+            977, 781
         );
 
-        this.balloons = [];
-
         this.makePath();
+        this.playing = true;
+    },
+
+    startLevel(id) {
+        this.playing = true;
     },
 
     getPoints(x1, y1, x2, y2) {
@@ -40,80 +64,121 @@ const td = new Canv('canvas', {
 
     makePath() {
         const newPath = [];
-        for (let i = 0; i < this.path.length; i++) {
-            if (i < this.path.length - 1) {
+        for (let i = 0; i < this.level.path.length; i++) {
+            if (i < this.level.path.length - 1) {
                 const between = this.getPoints(
-                    this.path[i][0], this.path[i][1],
-                    this.path[i + 1][0], this.path[i + 1][1]
+                    this.level.path[i][0], this.level.path[i][1],
+                    this.level.path[i + 1][0], this.level.path[i + 1][1]
                 );
                 between.forEach(point => {
                     newPath.push(point);
                 })
             }
         }
-        this.path = newPath;
+        this.level.path = newPath;
     },
 
     drawPath() {
-        for (let i = 0; i < this.path.length; i++) {
-            if (i < this.path.length - 1) {
-                let line = new Line(
-                    this.path[i][0], this.path[i][1],
-                    this.path[i + 1][0], this.path[i + 1][1]);
-                this.add(line);
+        if(!this.pathLines) {
+            this.pathLines = new ShapeGroup();
+            for (let i = 0; i < this.level.path.length; i++) {
+                if(i < this.level.path.length - 1) {
+                    let line = new Line(
+                        this.level.path[i][0], this.level.path[i][1],
+                        this.level.path[i + 1][0], this.level.path[i + 1][1]);
+                    this.pathLines.add(line);
+                }
+            }
+        } else {
+            this.add(this.pathLines);
+        }
+    },
+
+    loseLife() {
+        this.player.lives--;
+        if(this.player.lives === 0) {
+            this.playing = false;
+        }
+    },
+
+    drawPlayerStats() {
+        const lives = new Text(this.player.lives, 5, 20);
+        lives.color = new Color(255);
+        this.add(lives);
+    },
+
+    updateBalloons() {
+        for (let i = this.level.balloons.length - 1; i >= 0; i--) {
+            let balloon = this.level.balloons[i];
+            balloon.i += this.player.speed;
+            if (balloon.i >= this.level.path.length-1) {
+                this.level.balloons.unshift();
+                // console.log(balloon.i);
+                // this.loseLife();
+            } else {
+
+                balloon.x = this.level.path[balloon.i][0];
+                balloon.y = this.level.path[balloon.i][1];
+
+                if(balloon.contains(this.mouseX, this.mouseY)) {
+                    
+                }
+            }
+        }
+    },
+
+    drawBalloons() {
+        for (let i = 0; i < this.level.balloons.length; i++) {
+            let balloon = this.level.balloons[i];
+            if(this.level.path[balloon.i]) {
+                this.add(balloon);
             }
         }
     },
 
     addBalloon() {
-        let balloon = new Circle(0, 0, 10);
+        let balloon = new Circle(this.level.path[0][0], this.level.path[0][1], 10);
             balloon.color = new Color(200, 0, 0);
             balloon.i = 0;
-        this.balloons.push(balloon);
+        this.level.balloons.push(balloon);
     },
 
-    update() {
-        for (let i = this.balloons.length - 1; i >= 0; i--) {
-            let balloon = this.balloons[i];
-            balloon.i += this.speed;
-            if (balloon.i > this.path.length-1) {
-                this.balloons.unshift();
-            } else {
-                if(balloon.contains(this.mouseX, this.mouseY)) {
-                    console.log(balloon);
-                } else {
-                    balloon.x = this.path[balloon.i][0];
-                    balloon.y = this.path[balloon.i][1];
-                }
-            }
-        }
-
-        if(this.frames % 50 === 0) {
-            this.addBalloon();
-        }
-        // this.enableCustomPath();
-    },
-
-    enableCustomPath() {
+    updateEditedPath() {
         if (this.mouseDown && !this.clicked) {
             this.clicked = true;
 
-            this.path.push([this.mouseX, this.mouseY]);
-
+            this.level.path.push([this.mouseX, this.mouseY]);
             setTimeout(() => {
                 this.clicked = false;
             }, 10);
         }
     },
 
-    draw() {
-        this.clear();
-        this.add(this.bg);
-        for (let i = 0; i < this.balloons.length; i++) {
-            let balloon = this.balloons[i];
-            if(this.path[balloon.i]) {
-                this.add(balloon);
+    update() {
+        if(this.playing) {
+            this.updateBalloons();
+    
+            if(this.frames % 50 === 0) {
+                this.addBalloon();
             }
+            
+            if(this.editor) {
+                this.updateEditedPath();
+            }
+        }
+    },
+
+    draw() {
+        if(this.playing) {
+            this.clear();
+            this.add(this.level.background);
+
+            if(this.editor) {
+                this.drawPath();
+            }
+
+            this.drawBalloons();
+            this.drawPlayerStats();
         }
     }
 })
