@@ -1,7 +1,7 @@
 class Color {
     static fromHex(hex) {
         const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
-        hex = hex.replace(shorthandRegex, function(m, r, g, b) {
+        hex = hex.replace(shorthandRegex, function (m, r, g, b) {
             return r + r + g + g + b + b;
         });
         const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -35,13 +35,13 @@ class Color {
     }
 
     constructor() {
-        if(arguments.length === 0) {
+        if (arguments.length === 0) {
             this.r = 0;
             this.g = 0;
             this.b = 0;
             this.a = 0;
         } else if (arguments.length === 1) {
-            if(arguments[0] instanceof Color) {
+            if (arguments[0] instanceof Color) {
                 this.r = arguments[0].r;
                 this.g = arguments[0].g;
                 this.b = arguments[0].b;
@@ -75,23 +75,35 @@ class Color {
 
 
 
-        if(this.r > 255) { this.r=255; }
-        if(this.g > 255) { this.g=255; }
-        if(this.b > 255) { this.b=255; }
-        
-        if(this.r < 0) { this.r=0; }
-        if(this.g < 0) { this.g=0; }
-        if(this.b < 0) { this.b=0; }
+        if (this.r > 255) {
+            this.r = 255;
+        }
+        if (this.g > 255) {
+            this.g = 255;
+        }
+        if (this.b > 255) {
+            this.b = 255;
+        }
+
+        if (this.r < 0) {
+            this.r = 0;
+        }
+        if (this.g < 0) {
+            this.g = 0;
+        }
+        if (this.b < 0) {
+            this.b = 0;
+        }
     }
 
-    toString(type="rgba") {
-        return type=="rgba"
-            ?`rgba(${this.r}, ${this.g}, ${this.b}, ${this.a})`
-            :`rgb(${this.r}, ${this.g}, ${this.b})`
+    toString(type = "rgba") {
+        return type == "rgba" ?
+            `rgba(${this.r}, ${this.g}, ${this.b}, ${this.a})` :
+            `rgb(${this.r}, ${this.g}, ${this.b})`
     }
 
     shade(n) {
-        return new Color(this.r+n, this.g+n, this.b+n);
+        return new Color(this.r + n, this.g + n, this.b + n);
     }
 
     randomize() {
@@ -125,7 +137,7 @@ class Shape {
         this.dash = [];
         this.strokeWidth = 1;
     }
-    
+
     noStroke() {
         this.showFill = true;
         this.showStroke = false;
@@ -167,28 +179,28 @@ class Shape {
     }
 
     renderRotation(ctx) {
-        let w=this.width,
-            h=this.height,
-            x=this.x,
-            y=this.y;
+        let w = this.width,
+            h = this.height,
+            x = this.x,
+            y = this.y;
 
-        if(this.angle) {
-            ctx.translate(x+w/2,y+h/2);
-            ctx.rotate(this.angle*(Math.PI/180));
-            ctx.translate(-(x+w/2),-(y+h/2));
+        if (this.angle) {
+            ctx.translate(x + w / 2, y + h / 2);
+            ctx.rotate(this.angle * (Math.PI / 180));
+            ctx.translate(-(x + w / 2), -(y + h / 2));
         }
     }
-    
+
 }
 
 class ShapeGroup {
-    constructor(shapes=[]) {
+    constructor(shapes = []) {
         Object.keys(shapes).forEach(shapeKey => {
             this[shapeKey] = shapes[shapeKey];
         })
         this.shapes = shapes;
     }
-    
+
     set color(x) {
         Object.values(this.shapes).forEach(shape => shape.color = x);
     }
@@ -226,7 +238,7 @@ class ShapeGroup {
 
     add(n) {
         this.shapes.push(n);
-        
+
     }
 
     moveX(n) {
@@ -238,12 +250,12 @@ class ShapeGroup {
     }
 
     rotate(n) {
-        Object.values(this.shapes).forEach(shape => shape.angle+=n);
+        Object.values(this.shapes).forEach(shape => shape.angle += n);
     }
 }
 
 class Pic extends Shape {
-    constructor(src, x=0, y=0, width, height) {
+    constructor(src, x = 0, y = 0, width, height, fn) {
         super(x, y, 0);
         this.image = new Image();
         this.src = src;
@@ -254,11 +266,14 @@ class Pic extends Shape {
 
         this.image.onload = () => {
             this.loaded = true;
-            if(!this.width) {
+            if (!this.width) {
                 this.width = this.image.naturalWidth;
             }
-            if(!this.height) {
+            if (!this.height) {
                 this.height = this.image.naturalHeight;
+            }
+            if(typeof fn === "function") {
+                fn(this);
             }
         };
     }
@@ -272,18 +287,18 @@ class Pic extends Shape {
     }
 
     render(ctx) {
-        if(!this.loaded) {
+        if (!this.loaded) {
             setTimeout(() => this.render(ctx), 0);
         } else {
             ctx.save();
             ctx.beginPath();
             this.renderRotation(ctx);
-            if(this.showStroke) {
+            if (this.showStroke) {
                 ctx.lineWidth = this.strokeWidth;
                 ctx.strokeStyle = this.stroke.toString();
                 ctx.strokeRect(this.x, this.y, this.width, this.height);
             }
-            if(this.showFill) {
+            if (this.showFill) {
                 ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
             }
             ctx.closePath();
@@ -309,7 +324,7 @@ class Line extends Shape {
     constructor(x1, y1, x2, y2) {
         super(x1, y1, new Color(0));
 
-        if(x1 instanceof Vector && y1 instanceof Vector) {
+        if (x1 instanceof Vector && y1 instanceof Vector) {
             this.x = x1.x;
             this.y = x1.y;
             this.x2 = y1.x;
@@ -367,7 +382,7 @@ class Line extends Shape {
 }
 
 class Rect extends Shape {
-    constructor(x=0, y=0, w=5, h=5, color='black') {
+    constructor(x = 0, y = 0, w = 5, h = 5, color = 'black') {
         super(x, y, color);
         this.width = w;
         this.height = h;
@@ -377,13 +392,13 @@ class Rect extends Shape {
         ctx.save();
         ctx.beginPath();
         this.renderRotation(ctx);
-        if(this.showStroke) {
+        if (this.showStroke) {
             ctx.lineWidth = this.strokeWidth;
             ctx.strokeStyle = this.stroke.toString();
             ctx.strokeRect(this.x, this.y, this.width, this.height);
         }
 
-        if(this.showFill) {
+        if (this.showFill) {
             ctx.fillStyle = this.color.toString();
             ctx.fillRect(this.x, this.y, this.width, this.height);
         }
@@ -397,7 +412,7 @@ class Rect extends Shape {
 }
 
 class Circle extends Shape {
-    constructor(x=0, y=0, radius=5, color='black') {
+    constructor(x = 0, y = 0, radius = 5, color = 'black') {
         super(x, y, color);
         this.size = radius;
     }
@@ -416,14 +431,14 @@ class Circle extends Shape {
 
     render(ctx) {
         ctx.beginPath();
-        if(this.showStroke) {
+        if (this.showStroke) {
             ctx.lineWidth = this.strokeWidth;
             ctx.strokeStyle = this.stroke.toString();
             ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
             ctx.stroke();
         }
 
-        if(this.showFill) {
+        if (this.showFill) {
             ctx.fillStyle = this.color.toString();
             ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
             ctx.fill();
@@ -459,9 +474,9 @@ class Triangle extends Shape {
         ctx.moveTo(this.x1, this.y1);
         ctx.lineTo(this.x2, this.y2);
         ctx.lineTo(this.x3, this.y3);
-        if(this.showStroke) {
+        if (this.showStroke) {
             ctx.lineWidth = this.strokeWidth;
-            if(this.dash.length > 0) {
+            if (this.dash.length > 0) {
                 ctx.setLineDash(this.dash);
             }
             ctx.strokeStyle = this.stroke.toString();
@@ -469,7 +484,7 @@ class Triangle extends Shape {
             ctx.stroke();
         }
 
-        if(this.showFill) {
+        if (this.showFill) {
             ctx.fillStyle = this.color.toString();
             ctx.fill();
         }
@@ -487,18 +502,18 @@ class BarGraph extends ShapeGroup {
         });
         this.label = config.label || "No Label";
         this.inc = config.inc || 1;
-        this.gap = config.gap===undefined?20:config.gap;
-        this.shadow = config.shadow===undefined?2:config.shadow;
-        this.lines = config.lines===undefined?true:config.lines;
+        this.gap = config.gap === undefined ? 20 : config.gap;
+        this.shadow = config.shadow === undefined ? 2 : config.shadow;
+        this.lines = config.lines === undefined ? true : config.lines;
         this.fields = config.fields || [];
-        this.max = config.max===undefined?"calc":config.max;
+        this.max = config.max === undefined ? "calc" : config.max;
 
 
         this.update();
     }
 
     update() {
-        this.highest = this.max==="calc"?Math.max(...this.fields.map(f=>f.number)):this.max;
+        this.highest = this.max === "calc" ? Math.max(...this.fields.map(f => f.number)) : this.max;
 
         this.steps.shapes = [];
         this.bars.shapes = [];
@@ -507,28 +522,28 @@ class BarGraph extends ShapeGroup {
         const len = this.fields.length;
         const step = this.bounds.height / (this.highest / (this.inc));
         let j = 0;
-        for(let i = 0; i <= this.highest; i+=this.inc) {
+        for (let i = 0; i <= this.highest; i += this.inc) {
             let stepShape = new ShapeGroup;
             let stepLabel = new Text(
                 i,
-                this.bounds.x-30,
+                this.bounds.x - 30,
                 this.bounds.y + this.bounds.height - ((j * step))
             ).setSize(12).setFont("Verdana");
             stepShape.add(stepLabel);
 
             let stepMarker = new Rect(
-                stepLabel.x+20,
+                stepLabel.x + 20,
                 stepLabel.y,
                 10,
                 1
             );
             stepShape.add(stepMarker);
 
-            if(this.lines) {
+            if (this.lines) {
                 let stepLine = new Rect(
                     stepMarker.x,
                     stepMarker.y,
-                    this.bounds.width+20,
+                    this.bounds.width + 20,
                     1
                 ).setColor(200);
                 stepShape.add(stepLine);
@@ -548,9 +563,9 @@ class BarGraph extends ShapeGroup {
             let c = field.color;
             const s = this.shadow;
             const bar = new ShapeGroup({
-                shadow: new Rect(x+s, y-s, w, h+s).setColor(c.shade(-100)),
+                shadow: new Rect(x + s, y - s, w, h + s).setColor(c.shade(-100)),
                 bar: new Rect(x, y, w, h).setColor(c),
-                text: new Text(field.label, x, y-2-s).setSize(12).setFont("Verdana"),
+                text: new Text(field.label, x, y - 2 - s).setSize(12).setFont("Verdana"),
             });
             this.bars.add(bar);
         });
@@ -558,7 +573,7 @@ class BarGraph extends ShapeGroup {
 }
 
 class Text extends Shape {
-    constructor(string="undefined", x=0, y=0, fontSize=20) {
+    constructor(string = "undefined", x = 0, y = 0, fontSize = 20) {
         super(x, y, 0);
 
         this.string = string;
@@ -592,13 +607,13 @@ class Text extends Shape {
         ctx.textAlign = this.textAlign;
         ctx.font = this.font;
         this.renderRotation(ctx);
-        if(this.showStroke) {
+        if (this.showStroke) {
             ctx.lineWidth = this.strokeWidth;
             ctx.strokeStyle = this.stroke.toString();
             ctx.strokeText(this.string, this.x, this.y);
         }
 
-        if(this.showFill) {
+        if (this.showFill) {
             ctx.fillStyle = this.color.toString();
             ctx.fillText(this.string, this.x, this.y);
         }
@@ -609,10 +624,10 @@ class Text extends Shape {
 
 class Canv {
     static random(min, max) {
-        if(arguments.length === 1) {
+        if (arguments.length === 1) {
             max = Math.floor(min);
             min = 0;
-        } else if(arguments.length === 2) {
+        } else if (arguments.length === 2) {
             min = Math.ceil(min);
             max = Math.floor(max);
         }
@@ -643,7 +658,7 @@ class Canv {
 
     set background(n) {
         this.$background = new Color(n);
-        if(this.$background) {
+        if (this.$background) {
             let bg = new Rect(0, 0, this.width, this.height);
             bg.color = this.background;
             this.add(bg);
@@ -670,7 +685,7 @@ class Canv {
 
     constructor(selector, config) {
         let noSelector = true;
-        if(typeof selector === "object") {
+        if (typeof selector === "object") {
             config = selector;
             this.canvas = document.createElement("canvas");
         } else {
@@ -694,8 +709,8 @@ class Canv {
         if (config && typeof config === "object") {
             const configKeys = Object.keys(config);
             configKeys.forEach(key => {
-                if(key === "setup" || key === "update" || key === "draw") {
-                    this["$"+key] = config[key].bind(this);
+                if (key === "setup" || key === "update" || key === "draw") {
+                    this["$" + key] = config[key].bind(this);
                 } else {
                     this[key] = config[key];
                 }
@@ -705,7 +720,7 @@ class Canv {
         this.binds();
         this.start();
 
-        if(noSelector) {
+        if (noSelector) {
             return this.canvas;
         }
     }
@@ -738,19 +753,19 @@ class Canv {
         });
 
         window.addEventListener("keyup", e => {
-            if(this.keysDown[e.key]) {
+            if (this.keysDown[e.key]) {
                 delete this.keysDown[e.key];
             }
         });
 
         window.addEventListener("keydown", e => {
-            if(!this.keysDown[e.key]) {
+            if (!this.keysDown[e.key]) {
                 this.keysDown[e.key] = true;
             }
         })
 
 
-        if(this.fullscreen) {
+        if (this.fullscreen) {
             this.resize();
             window.addEventListener("resize", e => this.resize());
         }
@@ -762,7 +777,7 @@ class Canv {
     }
 
     start() {
-        if(!this.$running) {
+        if (!this.$running) {
             this.$running = true;
             if (this.$setup) this.$setup();
             if (this.$update || this.$draw) requestAnimationFrame(this.loop.bind(this));
@@ -775,19 +790,32 @@ class Canv {
     }
 
     stop() {
-        if(this.$running) {
+        if (this.$running) {
             this.$running = false;
         }
         return this;
     }
 
+    write(str, x, y) {
+        if(x===undefined) {
+            x = this.halfWidth();
+        }
+
+        if(y===undefined) {
+            y = this.halfHeight();
+        }
+
+        let txt = new Text(str, x, y);
+        this.add(txt);
+    }
+
     loop() {
         if (this.$running) {
             this.frames++;
-            if(this.$update && (this.$updateDelay===0 || this.frames%this.$updateDelay===0)) {
+            if (this.$update && (this.$updateDelay === 0 || this.frames % this.$updateDelay === 0)) {
                 if (this.$update) this.$update(this.frames);
             }
-            if(this.$draw && (this.$drawDelay===0 || this.frames%this.$drawDelay===0)) {
+            if (this.$draw && (this.$drawDelay === 0 || this.frames % this.$drawDelay === 0)) {
                 if (this.$draw) this.$draw(this.frames);
             }
             requestAnimationFrame(this.loop.bind(this));
@@ -795,7 +823,7 @@ class Canv {
     }
 
     set updateDelay(delay) {
-        if(typeof delay === "number" && delay > 0) {
+        if (typeof delay === "number" && delay > 0) {
             this.$updateDelay = delay;
         } else {
             this.$updateDelay = 0;
@@ -803,7 +831,7 @@ class Canv {
     }
 
     set drawDelay(delay) {
-        if(typeof delay === "number" && delay > 0) {
+        if (typeof delay === "number" && delay > 0) {
             this.$drawDelay = delay;
         } else {
             this.$drawDelay = 0;
@@ -816,12 +844,12 @@ class Canv {
         const data = this.ctx.getImageData(0, 0, this.width, this.height).data;
         const l = this.width * this.height;
         for (let i = 0; i < l; i++) {
-            let r = data[i*4]; // Red
-            let g = data[i*4+1]; // Green
-            let b = data[i*4+2]; // Blue
-            let a = data[i*4+3]; // Alpha
+            let r = data[i * 4]; // Red
+            let g = data[i * 4 + 1]; // Green
+            let b = data[i * 4 + 2]; // Blue
+            let a = data[i * 4 + 3]; // Alpha
             let y = parseInt(i / this.width, 10);
-            if(!px[y]) {
+            if (!px[y]) {
                 px[y] = [];
             }
             let x = i - y * this.width;
