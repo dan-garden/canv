@@ -174,6 +174,11 @@ class Shape {
     }
 
     rotate(n) {
+        this.angle += n;
+        return this;
+    }
+
+    setAngle(n) {
         this.angle = n;
         return this;
     }
@@ -339,8 +344,16 @@ class Line extends Shape {
         return this.x;
     }
 
+    set x1(n) {
+        this.x = n;
+    }
+
     get y1() {
         return this.y;
+    }
+
+    set y1(n) {
+        this.y = n;
     }
 
     set width(n) {

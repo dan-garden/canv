@@ -13,6 +13,7 @@ const game = new Canv('canvas', {
 
 
         this.bullets = new ShapeGroup();
+        this.shooting = false;
         this.addEnemies();
     },
 
@@ -32,7 +33,7 @@ const game = new Canv('canvas', {
                 let x = (i * (w + colGap));
                 let y = (j * (h + rowGap));
 
-                let enemy = new Rect(x, y, w, h);
+                let enemy = new Pic("images/invader.png", x, y, w, h);
                 enemy.color = new Color(255, 255, 255);
                 this.enemies.add(enemy);
             }
@@ -55,21 +56,46 @@ const game = new Canv('canvas', {
                 this.player.moveX(this.playerSpeed);
             }
         }
-        if(this.keyDown(' ') && this.frames % 10 === 0) {
+        if(this.keyDown(' ') && !this.shooting) {
+            this.shooting = true;
             const bullet = new Rect(
                 this.player.x + (this.player.width / 2),
                 this.player.y,
                 2,
-                3
+                10
             ).setColor(new Color(0, 210, 30));
             this.bullets.add(bullet);
+            setTimeout(() => {
+                this.shooting = false;
+            }, 100)
         }
+        
         this.bullets.moveY(-5);
-        this.enemies.moveX(0.4);
+
+        if(this.frames % 5 === 0) {
+            this.enemies.moveX(2);
+        }
+
+
+
+        for(let i = this.bullets.shapes.length-1; i >= 0; i--) {
+            let bullet = this.bullets.shapes[i];
+            for(let j = this.enemies.shapes.length-1; j >= 0; j--) {
+                let enemy = this.enemies.shapes[j];
+                if(enemy.contains(bullet.x, bullet.y)) {
+                    this.bullets.shapes.splice(i, 1);
+                    this.enemies.shapes.splice(j, 1);
+                }
+            }
+
+            if(bullet.y < 0) {
+                this.bullets.shapes.splice(i, 1);
+            }
+        }
     },
 
     draw() {
-        this.background = new Color(0);
+        this.background = new Color(100);
 
         this.add(this.enemies);
         this.add(this.bullets);

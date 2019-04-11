@@ -1,8 +1,5 @@
 const c = new Canv('canvas', {
-    setup() {
-        this.resize();
-        window.addEventListener("resize", e => this.resize());
-    },
+    fullscreen: true,
     cube(x, y, w, h) {
         const w2=w/2,h2=h/2;
         const faces = [];
@@ -67,10 +64,6 @@ const c = new Canv('canvas', {
 
         return new ShapeGroup(faces);
     },
-    resize() {
-        this.width = document.body.clientWidth;
-        this.height = document.body.clientHeight - 3;
-    },
     update() {
         
     },
@@ -78,6 +71,6 @@ const c = new Canv('canvas', {
         this.clear();
 
 
-        this.add(new ShapeGroup(cells));
+        this.add(this.cube(100, 100, 100, 100));
     }
 });
