@@ -141,25 +141,35 @@ class Shape {
     noStroke() {
         this.showFill = true;
         this.showStroke = false;
+        return this;
     }
 
     noFill() {
         this.showFill = false;
         this.showStroke = true;
+        return this;
     }
 
     setPos(x, y) {
         this.x = x;
         this.y = y;
+        return this;
     }
 
     setDimensions(w, h) {
         this.width = w;
         this.height = h;
+        return this;
     }
 
     setColor(n) {
         this.color = new Color(n);
+        return this;
+    }
+
+    setStroke(n) {
+        this.stroke = new Color(n);
+        this.showStroke = true;
         return this;
     }
 
@@ -183,16 +193,16 @@ class Shape {
         return this;
     }
 
-    renderRotation(ctx) {
+    renderRotation(canv) {
         let w = this.width,
             h = this.height,
             x = this.x,
             y = this.y;
 
         if (this.angle) {
-            ctx.translate(x + w / 2, y + h / 2);
-            ctx.rotate(this.angle * (Math.PI / 180));
-            ctx.translate(-(x + w / 2), -(y + h / 2));
+            canv.ctx.translate(x + w / 2, y + h / 2);
+            canv.ctx.rotate(this.angle * (Math.PI / 180));
+            canv.ctx.translate(-(x + w / 2), -(y + h / 2));
         }
     }
 
@@ -231,8 +241,8 @@ class ShapeGroup {
         Object.values(this.shapes).forEach(shape => shape.noFill());
     }
 
-    render(ctx) {
-        Object.values(this.shapes).forEach(shape => shape.render(ctx));
+    render(canv) {
+        Object.values(this.shapes).forEach(shape => shape.render(canv));
     }
 
     contains(x, y) {
@@ -291,23 +301,23 @@ class Pic extends Shape {
         this.image.src = n;
     }
 
-    render(ctx) {
+    render(canv) {
         if (!this.loaded) {
-            setTimeout(() => this.render(ctx), 0);
+            setTimeout(() => this.render(canv), 0);
         } else {
-            ctx.save();
-            ctx.beginPath();
-            this.renderRotation(ctx);
+            canv.ctx.save();
+            canv.ctx.beginPath();
+            this.renderRotation(canv);
             if (this.showStroke) {
-                ctx.lineWidth = this.strokeWidth;
-                ctx.strokeStyle = this.stroke.toString();
-                ctx.strokeRect(this.x, this.y, this.width, this.height);
+                canv.ctx.lineWidth = this.strokeWidth;
+                canv.ctx.strokeStyle = this.stroke.toString();
+                canv.ctx.strokeRect(this.x, this.y, this.width, this.height);
             }
             if (this.showFill) {
-                ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
+                canv.ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
             }
-            ctx.closePath();
-            ctx.restore();
+            canv.ctx.closePath();
+            canv.ctx.restore();
         }
     }
 }
@@ -317,11 +327,11 @@ class Point extends Shape {
         super(x, y);
     }
 
-    render(ctx) {
-        ctx.beginPath();
-        ctx.strokeStyle = this.color.toString();
-        ctx.strokeRect(this.x, this.y, 1, 1);
-        ctx.closePath();
+    render(canv) {
+        canv.ctx.beginPath();
+        canv.ctx.strokeStyle = this.color.toString();
+        canv.ctx.strokeRect(this.x, this.y, 1, 1);
+        canv.ctx.closePath();
     }
 }
 
@@ -383,14 +393,14 @@ class Line extends Shape {
         return false;
     }
 
-    render(ctx) {
-        ctx.beginPath();
-        ctx.lineWidth = this.strokeWidth;
-        ctx.strokeStyle = this.color.toString();
-        ctx.moveTo(this.x, this.y);
-        ctx.lineTo(this.x2, this.y2);
-        ctx.stroke();
-        ctx.closePath();
+    render(canv) {
+        canv.ctx.beginPath();
+        canv.ctx.lineWidth = this.strokeWidth;
+        canv.ctx.strokeStyle = this.color.toString();
+        canv.ctx.moveTo(this.x, this.y);
+        canv.ctx.lineTo(this.x2, this.y2);
+        canv.ctx.stroke();
+        canv.ctx.closePath();
     }
 }
 
@@ -401,22 +411,22 @@ class Rect extends Shape {
         this.height = h;
     }
 
-    render(ctx) {
-        ctx.save();
-        ctx.beginPath();
-        this.renderRotation(ctx);
+    render(canv) {
+        canv.ctx.save();
+        canv.ctx.beginPath();
+        this.renderRotation(canv);
         if (this.showStroke) {
-            ctx.lineWidth = this.strokeWidth;
-            ctx.strokeStyle = this.stroke.toString();
-            ctx.strokeRect(this.x, this.y, this.width, this.height);
+            canv.ctx.lineWidth = this.strokeWidth;
+            canv.ctx.strokeStyle = this.stroke.toString();
+            canv.ctx.strokeRect(this.x, this.y, this.width, this.height);
         }
 
         if (this.showFill) {
-            ctx.fillStyle = this.color.toString();
-            ctx.fillRect(this.x, this.y, this.width, this.height);
+            canv.ctx.fillStyle = this.color.toString();
+            canv.ctx.fillRect(this.x, this.y, this.width, this.height);
         }
-        ctx.closePath();
-        ctx.restore();
+        canv.ctx.closePath();
+        canv.ctx.restore();
     }
 
     contains(x, y) {
@@ -442,21 +452,21 @@ class Circle extends Shape {
         return ((x - this.x) * (x - this.x) + (y - this.y) * (y - this.y) <= this.radius * this.radius);
     }
 
-    render(ctx) {
-        ctx.beginPath();
+    render(canv) {
+        canv.ctx.beginPath();
         if (this.showStroke) {
-            ctx.lineWidth = this.strokeWidth;
-            ctx.strokeStyle = this.stroke.toString();
-            ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
-            ctx.stroke();
+            canv.ctx.lineWidth = this.strokeWidth;
+            canv.ctx.strokeStyle = this.stroke.toString();
+            canv.ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
+            canv.ctx.stroke();
         }
 
         if (this.showFill) {
-            ctx.fillStyle = this.color.toString();
-            ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
-            ctx.fill();
+            canv.ctx.fillStyle = this.color.toString();
+            canv.ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
+            canv.ctx.fill();
         }
-        ctx.closePath();
+        canv.ctx.closePath();
     }
 }
 
@@ -481,40 +491,40 @@ class Triangle extends Shape {
         return false;
     }
 
-    render(ctx) {
-        ctx.save();
-        ctx.beginPath();
-        ctx.moveTo(this.x1, this.y1);
-        ctx.lineTo(this.x2, this.y2);
-        ctx.lineTo(this.x3, this.y3);
+    render(canv) {
+        canv.ctx.save();
+        canv.ctx.beginPath();
+        canv.ctx.moveTo(this.x1, this.y1);
+        canv.ctx.lineTo(this.x2, this.y2);
+        canv.ctx.lineTo(this.x3, this.y3);
         if (this.showStroke) {
-            ctx.lineWidth = this.strokeWidth;
+            canv.ctx.lineWidth = this.strokeWidth;
             if (this.dash.length > 0) {
-                ctx.setLineDash(this.dash);
+                canv.ctx.setLineDash(this.dash);
             }
-            ctx.strokeStyle = this.stroke.toString();
-            ctx.lineTo(this.x1, this.y1);
-            ctx.stroke();
+            canv.ctx.strokeStyle = this.stroke.toString();
+            canv.ctx.lineTo(this.x1, this.y1);
+            canv.ctx.stroke();
         }
 
         if (this.showFill) {
-            ctx.fillStyle = this.color.toString();
-            ctx.fill();
+            canv.ctx.fillStyle = this.color.toString();
+            canv.ctx.fill();
         }
-        ctx.closePath();
-        ctx.restore();
+        canv.ctx.closePath();
+        canv.ctx.restore();
     }
 }
 
 class BarGraph extends ShapeGroup {
     constructor(config) {
         super({
-            bounds: config.bounds,
+            bounds: config.bounds || new Rect(0, 0, 100, 100),
             steps: new ShapeGroup,
             bars: new ShapeGroup,
         });
         this.label = config.label || "No Label";
-        this.inc = config.inc || 1;
+        this.step = config.step || 1;
         this.gap = config.gap === undefined ? 20 : config.gap;
         this.shadow = config.shadow === undefined ? 2 : config.shadow;
         this.lines = config.lines === undefined ? true : config.lines;
@@ -533,9 +543,9 @@ class BarGraph extends ShapeGroup {
         this.bounds.showStroke = false;
         this.bounds.showFill = false;
         const len = this.fields.length;
-        const step = this.bounds.height / (this.highest / (this.inc));
+        const step = this.bounds.height / (this.highest / (this.step));
         let j = 0;
-        for (let i = 0; i <= this.highest; i += this.inc) {
+        for (let i = 0; i <= this.highest; i += this.step) {
             let stepShape = new ShapeGroup;
             let stepLabel = new Text(
                 i,
@@ -578,7 +588,7 @@ class BarGraph extends ShapeGroup {
             const bar = new ShapeGroup({
                 shadow: new Rect(x + s, y - s, w, h + s).setColor(c.shade(-100)),
                 bar: new Rect(x, y, w, h).setColor(c),
-                text: new Text(field.label, x, y - 2 - s).setSize(12).setFont("Verdana"),
+                text: field.label ? new Text(field.label, x, y - 2 - s).setSize(12).setFont("Verdana") : new Rect(-100, -100, 0, 0),
             });
             this.bars.add(bar);
         });
@@ -615,22 +625,23 @@ class Text extends Shape {
         return this;
     }
 
-    render(ctx) {
-        ctx.beginPath();
-        ctx.textAlign = this.textAlign;
-        ctx.font = this.font;
-        this.renderRotation(ctx);
+    render(canv) {
+        canv.ctx.beginPath();
+        canv.ctx.textAlign = this.textAlign;
+        canv.ctx.font = this.font;
+        this.renderRotation(canv);
         if (this.showStroke) {
-            ctx.lineWidth = this.strokeWidth;
-            ctx.strokeStyle = this.stroke.toString();
-            ctx.strokeText(this.string, this.x, this.y);
+            canv.ctx.lineWidth = this.strokeWidth;
+            canv.ctx.strokeStyle = this.stroke.toString();
+            canv.ctx.strokeText(this.string, this.x, this.fontSize + this.y);
         }
 
         if (this.showFill) {
-            ctx.fillStyle = this.color.toString();
-            ctx.fillText(this.string, this.x, this.y);
+            canv.ctx.fillStyle = this.color.toString();
+            this.width = canv.ctx.measureText(this.string).width;
+            canv.ctx.fillText(this.string, this.x, this.fontSize + this.y);
         }
-        ctx.closePath();
+        canv.ctx.closePath();
     }
 }
 
@@ -891,7 +902,7 @@ class Canv {
 
     add(n) {
         if (n) {
-            n.render(this.ctx);
+            n.render(this);
         }
     }
 }

@@ -7,16 +7,13 @@ new Canv('canvas', {
     t_step: 1 / 20,
     tmp: 0,
     fullscreen: true,
-    setup() {
-        this.setFrameDelay(100);
-    },
     rand(min, max) {
         const b = (max === 0 || max) ? max : 1,
             a = min || 0;
         return a + (b - a) * Math.random();
     },
     draw() {
-        this.background = new Color(0, 0, 0);
+        // this.background = new Color(0, 0, 0);
         this.x0 = -1, this.y0 = this.height / 2;
         this.tmp = Math.pow(this.t, 1.75) / 19;
         for (this.x = 0; this.x < this.width; this.x = this.x + 3) {

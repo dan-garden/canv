@@ -1,4 +1,4 @@
-const c = new Canv('canvas', {
+new Canv('canvas', {
     fullscreen: true,
     cube(x, y, w, h) {
         const w2=w/2,h2=h/2;
@@ -65,12 +65,10 @@ const c = new Canv('canvas', {
         return new ShapeGroup(faces);
     },
     update() {
-        
+        this.obj = this.cube(100, 100, 100, 100);
+        this.obj.stroke = new Color(255);
     },
     draw() {
-        this.clear();
-
-
-        this.add(this.cube(100, 100, 100, 100));
+        this.add(this.obj);
     }
 });

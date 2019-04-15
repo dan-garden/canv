@@ -1,4 +1,4 @@
-const lights = new Canv('canvas', {
+new Canv('canvas', {
     width: 900,
     height: 500,
     count: 10,

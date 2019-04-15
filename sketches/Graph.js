@@ -1,4 +1,4 @@
-const graph = new Canv('canvas', {
+new Canv('canvas', {
     width: 500,
     height: 500,
     gWidth: 300,

@@ -102,7 +102,7 @@ const app = new Canv("canvas", {
     },
 
     draw() {
-        this.clear();
+        // this.clear();
         this.add(this.textbox());
         this.add(this.menu());
     }

@@ -1,4 +1,4 @@
-const game = new Canv('canvas', {
+new Canv('canvas', {
     fullscreen: true,
     playerSpeed: 5,
     enemyRows: 5,

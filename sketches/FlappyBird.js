@@ -1,4 +1,4 @@
-const game = new Canv('canvas', {
+new Canv('canvas', {
     width: 400,
     height: 400,
     gap: 100,

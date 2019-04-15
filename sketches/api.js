@@ -1,4 +1,4 @@
-const game = new Canv('canvas', {
+new Canv('canvas', {
     width: 300,
     height: 300,
     road: [],

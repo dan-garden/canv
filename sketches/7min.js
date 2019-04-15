@@ -60,7 +60,8 @@ class Person extends ShapeGroup {
     }
 }
 
-const game = new Canv('canvas', {
+
+new Canv('canvas', {
     fullscreen: true,
     setup() {
         this.ground = new Rect(0, this.height-30, this.width, 30);

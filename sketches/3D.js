@@ -1,4 +1,4 @@
-const note = new Canv('canvas', {
+new Canv('canvas', {
     width: 300,
     height: 300,
     move: 0,

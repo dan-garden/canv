@@ -51,40 +51,40 @@ new Canv('canvas', {
             );
 
             this.menu.add(btn);
-        })
+        });
 
-        // [
-        //     '#e6194b',
-        //     '#3cb44b',
-        //     '#ffe119',
-        //     '#4363d8',
-        //     '#f58231',
-        //     '#911eb4',
-        //     '#46f0f0',
-        //     '#f032e6',
-        //     '#bcf60c',
-        //     '#fabebe',
-        //     '#008080',
-        //     '#e6beff',
-        //     '#9a6324',
-        //     '#fffac8',
-        //     '#800000',
-        //     '#aaffc3',
-        //     '#808000',
-        //     '#ffd8b1',
-        //     '#000075',
-        //     '#808080',
-        //     '#ffffff',
-        //     '#000000'
-        // ].forEach((color, i) => {
-        //     let btn = this.button(
-        //         220 + (35 * i),
-        //         new Rect(null, null, 20, 10).setColor(color),
-        //         () => this.color=color
-        //     );
+        [
+            '#e6194b',
+            '#3cb44b',
+            '#ffe119',
+            '#4363d8',
+            '#f58231',
+            '#911eb4',
+            '#46f0f0',
+            '#f032e6',
+            '#bcf60c',
+            '#fabebe',
+            '#008080',
+            '#e6beff',
+            '#9a6324',
+            '#fffac8',
+            '#800000',
+            '#aaffc3',
+            '#808000',
+            '#ffd8b1',
+            '#000075',
+            '#808080',
+            '#ffffff',
+            '#000000'
+        ].forEach((color, i) => {
+            let btn = this.button(
+                220 + (35 * i),
+                new Rect(null, null, 20, 10).setColor(color),
+                () => this.color=color
+            );
 
-        //     this.menu.add(btn);
-        // })
+            this.menu.add(btn);
+        });
 
 
 
