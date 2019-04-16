@@ -680,6 +680,10 @@ class Canv {
         };
     }
 
+    get draw() {
+        return this.$draw;
+    }
+
     set background(n) {
         this.$background = new Color(n);
         if (this.$background) {

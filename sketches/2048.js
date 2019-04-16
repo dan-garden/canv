@@ -1,6 +1,5 @@
 new Canv("canvas", {
-    width: 500,
-    height: 500,
+    fullscreen: true,
     g: 4,
     colors: {
         0: new Color(238, 228, 218),

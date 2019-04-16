@@ -35,7 +35,6 @@ const m = new Canv('canvas', {
     },
 
     draw() {
-        this.background = new Color(0);
         this.rain.forEach(c => this.add(c));
     }
 })

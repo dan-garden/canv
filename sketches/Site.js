@@ -1,6 +1,5 @@
 const app = new Canv("canvas", {
-    width: 400,
-    height: 400,
+    fullscreen: true,
     text: "",
     selected: false,
     menu() {

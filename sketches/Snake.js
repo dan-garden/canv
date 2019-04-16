@@ -1,20 +1,15 @@
 new Canv('canvas', {
+    fullscreen: true,
     Cell: class extends Rect {
         constructor(x, y, w, h) {
             super(x, y, w, h);
         }
     },
     setup() {
-        this.resize();
-        window.addEventListener("resize", e => this.resize());
 
         this.cellsize = 20;
         this.move = 1;
         
-    },
-    resize() {
-        this.width = 500;
-        this.height = 500;
     },
     update() {
         if(this.keyDown) {

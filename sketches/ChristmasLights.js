@@ -1,6 +1,5 @@
 new Canv('canvas', {
-    width: 900,
-    height: 500,
+    fullscreen: true,
     count: 10,
     on: true,
     Light: class Light {
@@ -21,7 +20,7 @@ new Canv('canvas', {
     },
 
     setup() {
-        this.drawDelay = 20;
+        // this.drawDelay = 20;
     },
 
     update() {
@@ -39,9 +38,6 @@ new Canv('canvas', {
     },
 
     draw() {
-        this.clear();
-        
-
         this.add(this.lights);
     }
 });

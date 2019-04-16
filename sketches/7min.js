@@ -97,7 +97,6 @@ new Canv('canvas', {
     },
 
     draw() {
-        this.clear();
         this.add(this.ground);
         this.add(this.person);
     }

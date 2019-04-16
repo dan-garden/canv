@@ -95,8 +95,6 @@ new Canv('canvas', {
     },
 
     draw() {
-        this.background = new Color(100);
-
         this.add(this.enemies);
         this.add(this.bullets);
         this.add(this.player);
