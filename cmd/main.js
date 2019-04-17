@@ -35,8 +35,12 @@ class Term extends Canv {
                 this.bindPaste();
                 this.bindKeyDown();
 
+
+
                 this.loadPlugins();
             },
+
+            
 
             bindPaste() {
                 window.addEventListener("paste", e => {
