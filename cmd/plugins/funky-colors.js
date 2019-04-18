@@ -1,7 +1,8 @@
 new Canv('canvas', {
     fullscreen: true,
     setup() {
-        cmd.colors = {
+        this.default = Object.assign({}, cmd.colors);
+        this.colors = {
             primary: new Color(0),
             secondary: new Color(255),
 
@@ -12,6 +13,16 @@ new Canv('canvas', {
             red: new Color(255, 100, 100),
             green: new Color(0, 100, 0),
             blue: new Color(100, 100, 255)
-        }
+        };
+        
+        
+
+        cmd.registerCommand("funky-colors", (params) => {
+            if(params[0] === "off") {
+                cmd.colors = this.default;
+            } else {
+                cmd.colors = this.colors;
+            }
+        })
     },
 })

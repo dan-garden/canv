@@ -2,7 +2,13 @@ class Term extends Canv {
     constructor() {
         super('canvas', {
             fullscreen: true,
-            plugins: ["size-changer", "get"],
+            plugins: {
+                "echo": {},
+                // "code": {},
+                // "directory-system": {},
+                "get": {},
+                // "funky-colors": {}
+            },
             colors: {
                 primary: new Color(255),
                 secondary: new Color(18, 0, 36),
@@ -32,7 +38,7 @@ class Term extends Canv {
                 this.lineHeight = 18;
                 this.fontSize = 16;
                 this.cursor = new Rect(0, 0, 5, this.lineHeight - 2).setColor(this.colors.primary);
-                
+
                 this.bindPaste();
                 this.bindKeyDown();
 
@@ -50,7 +56,7 @@ class Term extends Canv {
                 window.addEventListener("keydown", e => {
                     if ((e.ctrlKey || e.metaKey) && e.key === "v") {
                         // e.preventDefault();
-                        return;   
+                        return;
                     }
                     const lastLineIndex = this.lines.length - 1;
                     const lastLine = this.lines[lastLineIndex].text;
@@ -63,8 +69,8 @@ class Term extends Canv {
                         const command = lastLine.replace(this.prefix, "");
                         this.updateHistory(command);
 
-                        const line = this.parseCommand(command);
-                        if(line) {
+                        const line = this.run(command);
+                        if (line) {
                             this.newLine(line);
                         } else {
 
@@ -91,16 +97,12 @@ class Term extends Canv {
             },
 
 
-            loadPlugins() {
-                this.plugins.forEach(plugin => {
-                    this.loadPlugin(plugin);
-                });
-                this.newLine();
-            },
-
-            newLine(line) {
-                if(!line) {
-                    this.lines.push({text: this.prefix, color: this.colors.primary})
+            newLine(line, color) {
+                if (!line) {
+                    this.lines.push({
+                        text: this.prefix,
+                        color: this.colors.primary
+                    })
                 } else {
                     if (typeof line !== "object") {
                         line = {
@@ -108,11 +110,15 @@ class Term extends Canv {
                             color: this.colors.primary
                         };
                     }
+
+                    if(color) {
+                        line.color = color;
+                    }
                     this.lines.push(line);
                 }
             },
 
-            log(result, color=this.colors.primary) {
+            log(result, color = this.colors.primary) {
                 const line = this.filterResult(result, color);
                 this.newLine(line);
             },
@@ -132,29 +138,44 @@ class Term extends Canv {
                     color = this.colors.green;
                 } else if (typeof text === "object" && !(text instanceof Error)) {
                     color = this.colors.blue;
-                    text = JSON.stringify(text, null, 2);
-                    text.split("\n").forEach(line => {
-                        this.lines.push({text: line, color}); 
-                    })
-                    return false;
+                    // text = JSON.stringify(text, null, 2);
+                    // text.split("\n").forEach(line => {
+                    //     this.lines.push({text: line, color}); 
+                    // })
+                    // return false;
                 } else if (typeof text === "undefined") {
                     color = this.colors.grey;
                 }
 
-                
-                return { text, color };
+
+                return {
+                    text,
+                    color
+                };
             },
 
-            parseCommand(command) {
+            run(command) {
                 let line = {
                     text: "",
                     color: new Color(this.colors.primary),
                 };
 
                 try {
-                    let split = command.split(" ");
-                    if(this.commands[split[0]]) {
-                        this.commands[split.shift()](split);
+                    let commands = Object.keys(this.commands);
+                    let isCommand = false;
+                    commands.forEach(c => {
+                        if(command === c || command.startsWith(c+" ")) {
+                            isCommand = true;
+                            let params = command
+                                    .replace(c, '')
+                                    .trim()
+                                    .split(' ')
+                                    .filter(p=>p!="");
+                            this.commands[c](params);
+                        }
+                    });
+
+                    if(isCommand) {
                         return false;
                     } else if (command.startsWith('clear()')) {
                         line.text = this.clear();
@@ -205,14 +226,32 @@ class Term extends Canv {
                 this.lines[this.lines.length - 1].text = this.prefix + this.history[this.curHistoryIndex];
             },
 
-            loadPlugin(name) {
+            loadPlugin(name, config = {}) {
                 let file = "plugins/" + name + ".js";
-                fetch(file+"?d="+new Date().getTime())
+                fetch(file + "?d=" + new Date().getTime())
                     .then(result => result.text())
                     .then(result => {
-                        this.plugins[this.plugins.indexOf(name)] = eval(`${result}`)
+                        this.plugins[name] = eval(`${result}`);
+                        if (typeof config === "object") {
+                            Object.keys(config).forEach(prop => {
+                                this.plugins[name][prop] = config[prop];
+                            });
+                        }
                     });
                 return this.log(file + " loaded!");
+            },
+
+
+            loadPlugins() {
+                Object.keys(this.plugins).forEach(name => {
+                    const config = this.plugins[name];
+                    this.loadPlugin(name, config);
+                });
+                this.newLine();
+            },
+
+            loadSketch(name, config = {}) {
+                this.loadPlugin("../../sketches/" + name, config);
             },
 
             clear() {
@@ -233,10 +272,13 @@ class Term extends Canv {
                 this.functions.push(fn.bind(this));
                 return fn.toString();
             },
-            
+
             registerCommand(name, handler) {
                 this.commands[name] = (params) => {
-                    this.log(handler(params));
+                    const res = handler(params);
+                    if(res!==undefined) {
+                        this.log(res);
+                    }
                 };
             },
 

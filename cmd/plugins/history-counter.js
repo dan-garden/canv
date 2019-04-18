@@ -4,10 +4,10 @@ new Canv('canvas', {
         this.display = [];
         cmd.log(this.display, cmd.colors.green);
         cmd.newLine(cmd.prefix);
-    },
 
-    update() {
-        this.display.pop();
-        this.display.unshift("History Length: " + cmd.history.length);
+        cmd.registerFunction(() => {
+            this.display.pop();
+            this.display.unshift("History Length: " + cmd.history.length);
+        });
     }
 })

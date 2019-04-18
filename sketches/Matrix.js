@@ -1,6 +1,4 @@
-const m = new Canv('canvas', {
-    width: 500,
-    height: 500,
+new Canv('canvas', {
     fontSize: 12,
     fullscreen: true,
     setup() {

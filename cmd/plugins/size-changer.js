@@ -3,6 +3,9 @@ new Canv('canvas', {
     setup() {
         this.buttons = new ShapeGroup({ increase: new Rect, decrease: new Rect });
         this.clicked = false;
+
+        this.color = cmd.colors.grey;
+        this.hoverColor = cmd.colors.grey.shade(10);
     },
 
     update() {
@@ -16,14 +19,14 @@ new Canv('canvas', {
 
 
         if(this.buttons.increase.contains(this.mouseX, this.mouseY)) {
-            this.buttons.increase.color = cmd.colors.grey.shade(10);
             if(this.mouseDown && !this.clicked) {
                 this.increase();
                 this.clicked = true;
                 setTimeout(() => { this.clicked=false; }, 100)
             }
+            this.buttons.increase.color = this.hoverColor;
         } else {
-            this.buttons.increase.color = cmd.colors.grey;
+            this.buttons.increase.color = this.color;
         }
         
         if(this.buttons.decrease.contains(this.mouseX, this.mouseY)) {
@@ -32,9 +35,9 @@ new Canv('canvas', {
                 this.decrease();
                 setTimeout(() => { this.clicked=false; }, 100)
             }
-            this.buttons.decrease.color = cmd.colors.grey.shade(10);
+            this.buttons.decrease.color = this.hoverColor;
         } else {
-            this.buttons.decrease.color = cmd.colors.grey;
+            this.buttons.decrease.color = this.color;
         }
     },
 
