@@ -3,11 +3,7 @@ class Term extends Canv {
         super('canvas', {
             fullscreen: true,
             plugins: {
-                "echo": {},
-                // "code": {},
-                // "directory-system": {},
-                "get": {},
-                // "funky-colors": {}
+                "funky-colors": {},
             },
             colors: {
                 primary: new Color(255),
@@ -30,14 +26,22 @@ class Term extends Canv {
 
                 this.curHistoryIndex = this.history.length;
 
-                this.functions = [];
-                this.commands = {};
+                this.functions = [
+
+                ];
+                this.commands = {
+                    "clear": () => this.lines = [],
+                    "cls": () => this.lines = [],
+                    "echo": (params) => this.newLine(params.join(" "))
+                };
                 this.view = new ShapeGroup;
 
                 this.maxHistory = 100000;
                 this.lineHeight = 18;
                 this.fontSize = 16;
-                this.cursor = new Rect(0, 0, 5, this.lineHeight - 2).setColor(this.colors.primary);
+
+                this.cursorPos = 1;
+                this.cursor = new Rect(0, 0, 1, this.lineHeight - 2).setColor(this.colors.primary);
 
                 this.bindPaste();
                 this.bindKeyDown();
@@ -48,7 +52,18 @@ class Term extends Canv {
             bindPaste() {
                 window.addEventListener("paste", e => {
                     e.preventDefault();
-                    this.lines[this.lines.length - 1].text += e.clipboardData.getData("text");
+                    const pasteData = e.clipboardData.getData("text");
+                    if (this.cursorPos === false) {
+                        this.lines[this.lines.length - 1].text += pasteData;
+                    } else {
+                        const lastLine = this.lines[this.lines.length - 1].text;
+                        const newLine = lastLine.substring(0, this.cursorPos) +
+                            pasteData +
+                            lastLine.substring(this.cursorPos, lastLine.length);
+
+                        this.lines[this.lines.length - 1].text = newLine;
+                        this.cursorPos += pasteData.length;
+                    }
                 });
             },
 
@@ -60,6 +75,28 @@ class Term extends Canv {
                     }
                     const lastLineIndex = this.lines.length - 1;
                     const lastLine = this.lines[lastLineIndex].text;
+                    if (e.key === "ArrowLeft") {
+                        if (this.cursorPos === false) {
+                            this.cursorPos = lastLine.length - 1;
+                        } else {
+                            if (this.cursorPos > this.prefix.length) {
+                                this.cursorPos--;
+                            }
+                        }
+                        return;
+                    }
+                    if (e.key === "ArrowRight") {
+                        if (this.cursorPos === false) {
+                            return;
+                        }
+                        if (this.cursorPos < lastLine.length - 1) {
+                            this.cursorPos++;
+                        } else if (this.cursorPos === lastLine.length - 1) {
+                            this.cursorPos = false;
+                        }
+                        return;
+                    }
+
                     if (e.key === "ArrowUp") {
                         this.historyChange(-1);
                     } else if (e.key === "ArrowDown") {
@@ -90,7 +127,13 @@ class Term extends Canv {
                             });
                             this.lines[lastLineIndex + 1].text += e.key;
                         } else {
-                            this.lines[lastLineIndex].text += e.key;
+                            if (this.cursorPos === false) {
+                                this.lines[lastLineIndex].text += e.key;
+                            } else {
+                                const newLine = lastLine.substring(0, this.cursorPos) + e.key + lastLine.substring(this.cursorPos, lastLine.length);
+                                this.lines[lastLineIndex].text = newLine;
+                                this.cursorPos++;
+                            }
                         }
                     }
                 });
@@ -111,10 +154,12 @@ class Term extends Canv {
                         };
                     }
 
-                    if(color) {
+                    if (color) {
                         line.color = color;
                     }
+
                     this.lines.push(line);
+                    this.cursorPos = false;
                 }
             },
 
@@ -164,21 +209,19 @@ class Term extends Canv {
                     let commands = Object.keys(this.commands);
                     let isCommand = false;
                     commands.forEach(c => {
-                        if(command === c || command.startsWith(c+" ")) {
+                        if (command === c || command.startsWith(c + " ")) {
                             isCommand = true;
                             let params = command
-                                    .replace(c, '')
-                                    .trim()
-                                    .split(' ')
-                                    .filter(p=>p!="");
+                                .replace(c, '')
+                                .trim()
+                                .split(' ')
+                                .filter(p => p != "");
                             this.commands[c](params);
                         }
                     });
 
-                    if(isCommand) {
+                    if (isCommand) {
                         return false;
-                    } else if (command.startsWith('clear()')) {
-                        line.text = this.clear();
                     } else {
                         ["const", "var", "let"].forEach(prefix => {
                             if (command.startsWith(prefix)) {
@@ -254,11 +297,6 @@ class Term extends Canv {
                 this.loadPlugin("../../sketches/" + name, config);
             },
 
-            clear() {
-                this.lines = [];
-                return "Console was cleared";
-            },
-
             update(frame) {
                 this.cursor.color = this.colors.primary;
                 this.functions.forEach(fn => {
@@ -276,7 +314,7 @@ class Term extends Canv {
             registerCommand(name, handler) {
                 this.commands[name] = (params) => {
                     const res = handler(params);
-                    if(res!==undefined) {
+                    if (res !== undefined) {
                         this.log(res);
                     }
                 };
@@ -299,9 +337,12 @@ class Term extends Canv {
                     }
                 });
 
-                this.cursor.x = lastLineWidth;
+                const cursorPos = this.cursorPos === false ? this.lines[this.lines.length - 1].text.length : this.cursorPos;
+
+                this.cursor.x = this.charWidth * cursorPos;
                 this.cursor.y = ((this.lines.length - 1) * this.lineHeight) + 2;
                 this.cursor.height = this.fontSize;
+
 
                 this.add(this.cursor);
                 this.add(this.view);

@@ -6,6 +6,8 @@ new Canv('canvas', {
 
         this.color = cmd.colors.grey;
         this.hoverColor = cmd.colors.grey.shade(10);
+
+        cmd.view.add(this.buttons);
     },
 
     update() {
@@ -50,8 +52,4 @@ new Canv('canvas', {
         cmd.fontSize--;
         cmd.lineHeight--;
     },
-
-    draw() {
-        this.add(this.buttons);
-    }
 })
