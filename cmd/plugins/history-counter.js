@@ -1,5 +1,4 @@
 new Canv('canvas', {
-    fullscreen: true,
     setup() {
         this.display = [];
         cmd.log(this.display, cmd.colors.green);

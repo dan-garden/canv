@@ -1,5 +1,4 @@
 new Canv('canvas', {
-    fullscreen: true,
     setup() {
         cmd.registerCommand("get", params => {
             let type = "text";
@@ -16,7 +15,7 @@ new Canv('canvas', {
                 });
                 return "Fetching data";
             } else {
-                return "No URL set";
+                return new Error("Invalid URL");
             }
         })
     }

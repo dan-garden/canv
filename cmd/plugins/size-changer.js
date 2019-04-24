@@ -1,5 +1,4 @@
 new Canv('canvas', {
-    fullscreen: true,
     setup() {
         this.buttons = new ShapeGroup({ increase: new Rect, decrease: new Rect });
         this.clicked = false;
