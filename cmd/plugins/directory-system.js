@@ -1,5 +1,4 @@
 new Canv('canvas', {
-    fullscreen: true,
     setup() {
         this.structure = [
             {

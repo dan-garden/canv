@@ -735,6 +735,10 @@ class Canv {
         this.background = new Color(255);
 
         if (config && typeof config === "object") {
+            if(!config.width && !config.height) {
+                config.fullscreen = true;
+            }
+
             const configKeys = Object.keys(config);
             configKeys.forEach(key => {
                 if (key === "setup" || key === "update" || key === "draw") {
