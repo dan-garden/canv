@@ -50,11 +50,11 @@ new Canv('canvas', {
 
 
 
-        this.path = "/Folder 1/";
+        this.path = "/Folder 1/New Folder";
 
 
         cmd.registerCommand("ls", (params) => {
-            cmd.prefix = this.path + "> ";
+            this.updatePrefix();
             const dir = this.getCurrent();
             if(dir) {
                 const content = dir.content || dir;
@@ -74,14 +74,38 @@ new Canv('canvas', {
 
 
         cmd.registerCommand("cd", (params) => {
-            
+            this.changeDirectory(params.join(" ") || this.path);
+            this.updatePrefix();
         })
     },
 
+    getPath(path) {
+        return path || this.path.split('/').filter(m=>m!=="") || path;
+    },
+
+    changeDirectory(dir) {
+        if(dir === this.path || dir === ".") {
+            return;
+        } else if(dir === "..") {
+            const path = this.getPath();
+            path.pop();
+            this.path = "/" + path.join("/");
+        } else {
+            const cur = this.path;
+            let path = this.getPath();
+            path.push(...dir.split('/'));
+            path = this.getPath("/" + path.join('/'));
+            this.path = path;
+        }
+    },
+
+    updatePrefix() {
+        cmd.prefix = "" + this.path + " $ ";
+    },
 
 
     getCurrent(path) {
-        path = path || this.path.split('/').filter(m=>m!=="") || path;
+        path = this.getPath(path);
         let dir = this.structure;
         for(let i = 0; i < path.length; i++) {
             dir = dir.filter ? 
