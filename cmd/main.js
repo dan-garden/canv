@@ -3,7 +3,7 @@ class Term extends Canv {
         super('canvas', {
             fullscreen: true,
             plugins: {
-                "funky-colors": {},
+                "directory-system": {}
             },
             colors: {
                 primary: new Color(255),
@@ -18,7 +18,7 @@ class Term extends Canv {
                 blue: new Color(100, 100, 255)
             },
             setup() {
-                this.prefix = "> "
+                this.prefix = "Dans-MacBook-Air:~ dan$ "
 
                 this.lines = [];
                 this.history = localStorage["cli-history"] ?
@@ -40,8 +40,9 @@ class Term extends Canv {
                 this.lineHeight = 18;
                 this.fontSize = 16;
 
-                this.cursorPos = 1;
+                this.cursorPos = false;
                 this.cursor = new Rect(0, 0, 1, this.lineHeight - 2).setColor(this.colors.primary);
+                this.newLine();
 
                 this.bindPaste();
                 this.bindKeyDown();
@@ -105,7 +106,6 @@ class Term extends Canv {
                         e.preventDefault();
                         const command = lastLine.replace(this.prefix, "");
                         this.updateHistory(command);
-
                         const line = this.run(command);
                         if (line) {
                             this.newLine(line);
@@ -116,7 +116,16 @@ class Term extends Canv {
                     } else if (e.key === "Backspace" || e.key === "Delete") {
                         e.preventDefault();
                         if (lastLine !== this.prefix) {
-                            this.lines[lastLineIndex].text = lastLine.substring(0, lastLine.length - 1);
+                            if (this.cursorPos === false) {
+                                this.lines[lastLineIndex].text = lastLine.substring(0, lastLine.length - 1);
+                            } else if (this.cursorPos > this.prefix.length) {
+                                this.lines[lastLineIndex].text = lastLine.slice(0, this.cursorPos - 1) + lastLine.slice(this.cursorPos);
+                                if (this.cursorPos === lastLine.length) {
+                                    this.cursorPos = false;
+                                } else {
+                                    this.cursorPos--;
+                                }
+                            }
                         }
                     } else if (e.key.length === 1) {
                         let maxWidth = (this.width / this.charWidth) - 1;
@@ -281,7 +290,6 @@ class Term extends Canv {
                             });
                         }
                     });
-                return this.log(file + " loaded!");
             },
 
 
@@ -290,7 +298,6 @@ class Term extends Canv {
                     const config = this.plugins[name];
                     this.loadPlugin(name, config);
                 });
-                this.newLine();
             },
 
             loadSketch(name, config = {}) {
