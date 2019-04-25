@@ -19,13 +19,15 @@ new Canv('canvas', {
                 for (let i = 0; i < cmd.lines.length; i++) {
                     const lineNumber = new Text(
                         i + 1,
-                        numbersBG.width / 2,
-                        5 + (i * cmd.lineHeight),
-                        12
+                        numbersBG.width-5,
+                        (i * cmd.lineHeight),
+                        cmd.fontSize
                     );
 
                     lineNumber.color = cmd.colors.primary.shade(-100);
-                    lineNumber.textAlign = "center";
+                    lineNumber.textAlign = "right";
+                    lineNumber.fontFamily = cmd.fontFamily;
+
                     lineNumbers.add(lineNumber);
                 }
 

@@ -41,12 +41,12 @@ class Term extends Canv {
 
                 this.maxHistory = 100000;
                 this.lineHeight = 18;
+                this.fontFamily = "monospace";
                 this.fontSize = 16;
                 this.textIndent = 0;
 
                 this.cursorPos = false;
                 this.cursor = new Rect(0, 0, 1, this.lineHeight - 2).setColor(this.colors.primary);
-                this.newLine();
 
                 this.bindPaste();
                 this.bindKeyDown();
@@ -285,10 +285,12 @@ class Term extends Canv {
                     }
                 }
                 this.lines[this.lines.length - 1].text = this.prefix + this.history[this.curHistoryIndex];
+                this.cursorPos = false;
             },
 
             finishedLoading() {
                 this.newLine(this.prefix);
+                this.loaded = true;
             },
 
             loadPlugin(name, config = {}, callback) {
@@ -310,12 +312,7 @@ class Term extends Canv {
             },
 
 
-            loadPlugins() {
-                Object.keys(this.plugins).forEach(name => {
-                    const config = this.plugins[name];
-                    this.loadPlugin(name, config);
-                });
-              
+            loadPlugins() {              
                 fetch("./plugins.json")
                     .then(result => result.json())
                     .then(result => {
@@ -363,31 +360,33 @@ class Term extends Canv {
             },
 
             draw() {
-                this.background = this.colors.secondary;
+                if(this.loaded) {
+                    this.background = this.colors.secondary;
 
-                let lastLineWidth = 0;
-                this.lines.forEach((line, i) => {
-                    const text = new Text(line.text, this.textIndent, i * this.lineHeight);
-                    text.color = line.color || this.colors.primary;
-                    text.fontFamily = "monospace";
-                    text.fontSize = this.fontSize;
-                    this.add(text);
+                    let lastLineWidth = 0;
+                    this.lines.forEach((line, i) => {
+                        const text = new Text(line.text, this.textIndent, i * this.lineHeight);
+                        text.color = line.color || this.colors.primary;
+                        text.fontFamily = this.fontFamily;
+                        text.fontSize = this.fontSize;
+                        this.add(text);
 
-                    if (i === this.lines.length - 1) {
-                        lastLineWidth = text.width;
-                        this.charWidth = lastLineWidth / text.string.length;
-                    }
-                });
+                        if (i === this.lines.length - 1) {
+                            lastLineWidth = text.width;
+                            this.charWidth = lastLineWidth / text.string.length;
+                        }
+                    });
 
-                const cursorPos = this.cursorPos === false ? this.lines[this.lines.length - 1].text.length : this.cursorPos;
+                    const cursorPos = this.cursorPos === false ? this.lines[this.lines.length - 1].text.length : this.cursorPos;
 
-                this.cursor.x = this.textIndent + (this.charWidth * cursorPos);
-                this.cursor.y = ((this.lines.length - 1) * this.lineHeight) + 2;
-                this.cursor.height = this.fontSize;
+                    this.cursor.x = this.textIndent + (this.charWidth * cursorPos);
+                    this.cursor.y = ((this.lines.length - 1) * this.lineHeight) + 2;
+                    this.cursor.height = this.fontSize;
 
 
-                this.add(this.cursor);
-                this.add(this.view);
+                    this.add(this.cursor);
+                    this.add(this.view);
+                }
             }
         });
 
