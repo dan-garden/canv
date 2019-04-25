@@ -22,6 +22,9 @@ new Canv('canvas', {
             cmd.run(args.join(" "));
         });
 
+        cmd.registerCommand("log", args => {
+            cmd.log(eval(args.join(" ")));
+        });
 
     }
 })

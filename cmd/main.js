@@ -41,8 +41,8 @@ class Term extends Canv {
 
                 this.maxHistory = 100000;
                 this.lineHeight = 18;
-                this.fontFamily = "monospace";
-                this.fontSize = 16;
+                this.fontFamily = "verdana";
+                this.fontSize = 14;
                 this.textIndent = 0;
 
                 this.cursorPos = false;
