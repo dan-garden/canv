@@ -1,56 +1,13 @@
 new Canv('canvas', {
     setup() {
-        this.structure = [
-            {
-                type: "file",
-                name: "file1.json",
-                content: `{
-                    status: success,
-                    data: [
-                        { "name": "Daniel Garden", age: 22 }
-                        { "name": "Karl Hubbard", age: 22 }
-                        { "name": "James Towers", age: 19 }
-                    ]
-                }`
-            },
-            {
-                type: "dir",
-                name: "Folder 1",
-                content: [
-                    {
-                        type: "file",
-                        name: "test.txt",
-                        content: "this is the file contents of text"
-                    },
-                    {
-                        type: "file",
-                        name: "test2.txt",
-                        content: "Testing file 2"
-                    },
-                    {
-                        type: "file",
-                        name: "image.png",
-                        content: "{{image-content}}"
-                    },
-                    {
-                        type: "dir",
-                        name: "New Folder",
-                        content: [
-                            {
-                                type: "file",
-                                name: "misc-image.jpeg",
-                                content: "{{image-content}}"
-                            }
-                        ]
-                    }
-                ]
-            }
-        ];
+        this.structure = localStorage["cli-structure"] ?
+        JSON.parse(localStorage.getItem("cli-structure")) : [];
 
 
 
 
         this.path = "/";
+        this.updatePrefix();
 
 
         cmd.registerCommand("ls", args => {
@@ -92,7 +49,48 @@ new Canv('canvas', {
             } else {
                 return found;
             }
-        })
+        });
+
+
+        cmd.registerCommand("touch", args => {
+            const filename = args.join(" ");
+
+            if(filename) {
+                this.getCurrent().push({
+                    name: filename,
+                    type: "file",
+                    content: ""
+                });
+            }
+
+            this.updateStructure();
+        });
+
+        cmd.registerCommand("mkdir", args => {
+            const filename = args.join(" ");
+
+            if(filename) {
+                this.getCurrent().push({
+                    name: filename,
+                    type: "dir",
+                    content: []
+                });
+            }
+            
+            this.updateStructure();
+        });
+
+
+        cmd.registerCommand("edit", args => {
+            const found = this.open(args.shift());
+
+            if(found) {
+                found.content = args.join(" ");
+                this.updateStructure();
+            } else {
+                // return found;
+            }
+        });
     },
 
     open(filename) {
@@ -107,6 +105,10 @@ new Canv('canvas', {
                 return new Error("File does not exist");
             }
         }
+    },
+
+    updateStructure() {
+        localStorage.setItem("cli-structure", JSON.stringify(this.structure));
     },
 
     getPath(path) {

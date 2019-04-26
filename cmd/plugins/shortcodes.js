@@ -1,12 +1,30 @@
 new Canv('canvas', {
     setup() {
+        cmd.registerCommand("clear", args => {
+            cmd.lines = [];
+            cmd.triggerEvent("clear");
+        });
+
+        cmd.registerCommand("cls", args => {
+            cmd.lines = [];
+            cmd.triggerEvent("clear");
+        });
+
+        cmd.registerCommand("echo", args => {
+            return args.join(" ");
+        })
+
+
         cmd.registerCommand("load", args => {
             const type = args.shift();
             if(type === "sketch") {
                 cmd.loadSketch(args.join(" "));
+                return true;
             } else if(type === "plugin") {
                 cmd.loadPlugin(args.join(" "));
+                return true;
             }
+            return false; 
         });
 
         cmd.registerCommand("plugins", args => {
@@ -25,6 +43,13 @@ new Canv('canvas', {
         cmd.registerCommand("log", args => {
             cmd.log(eval(args.join(" ")));
         });
+
+
+        cmd.registerEvent("newline", args => {
+            if(cmd.lines.length === 40) {
+                cmd.run("clear");
+            }
+        })
 
     }
 })

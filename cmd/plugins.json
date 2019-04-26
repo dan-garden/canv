@@ -7,5 +7,7 @@
     "hangman": {},
     "monitor": {},
     "get": {},
-    "shape-maker": {}
+    "shape-maker": {},
+    "localstorage": {},
+    "popups": {}
 }

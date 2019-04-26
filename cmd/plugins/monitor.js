@@ -22,6 +22,13 @@ new Canv('canvas', {
 
 
             return this.displays[this.displays.length-1];
+        });
+
+
+        cmd.registerEvent("clear", () => {
+            this.displays.forEach((display, i) => {
+                cmd.log(display);
+            })
         })
     }
 })

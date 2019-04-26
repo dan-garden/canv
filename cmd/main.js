@@ -8,7 +8,7 @@ class Term extends Canv {
                 grey: new Color(150),
 
                 magenta: new Color(213, 31, 222),
-
+                orange: new Color(255, 140, 0),
                 red: new Color(255, 100, 100),
                 green: new Color(100, 255, 100),
                 blue: new Color(100, 100, 255)
@@ -24,25 +24,20 @@ class Term extends Canv {
             setup() {
                 this.prefix = "$ ";
                 this.lines = [];
+                this.functions = [];
+                this.commands = {};
+                this.events = {};
                 this.history = localStorage["cli-history"] ?
                     JSON.parse(localStorage.getItem("cli-history")) : [];
 
                 this.curHistoryIndex = this.history.length;
 
-                this.functions = [
-
-                ];
-                this.commands = {
-                    "clear": () => this.lines = [],
-                    "cls": () => this.lines = [],
-                    "echo": (params) => this.newLine(params.join(" "))
-                };
                 this.view = new ShapeGroup;
 
-                this.maxHistory = 100000;
-                this.lineHeight = 18;
-                this.fontFamily = "verdana";
-                this.fontSize = 14;
+                this.maxHistory = 100;
+                this.lineHeight = 12;
+                this.fontFamily = "monospace";
+                this.fontSize = 12;
                 this.textIndent = 0;
 
                 this.cursorPos = false;
@@ -179,6 +174,8 @@ class Term extends Canv {
                     this.lines.push(line);
                     this.cursorPos = false;
                 }
+
+                this.triggerEvent("newline");
             },
 
             log(result, color = this.colors.primary) {
@@ -186,6 +183,21 @@ class Term extends Canv {
                 this.newLine(line);
             },
 
+            triggerEvent(type) {
+                if(Array.isArray(this.events[type])) {
+                    this.events[type].forEach(handler => {
+                        handler();
+                    })
+                }
+            },
+
+            registerEvent(type, fn) {
+                if(!this.events[type]) {
+                    this.events[type] = [];
+                }
+
+                this.events[type].push(fn);
+            },
 
             filterResult(text, color) {
                 if (typeof text === "number") {
@@ -217,6 +229,18 @@ class Term extends Canv {
                     text,
                     color
                 );
+            },
+
+            getLastLine() {
+                return this.lines[this.lines.length-2];
+            },
+
+            execute() {
+                const lastLine = this.getLastLine();
+                if(typeof lastLine.text === "function") {
+                    lastLine.text();
+                }
+                return lastLine.text;
             },
 
             run(command) {
@@ -318,6 +342,10 @@ class Term extends Canv {
                     .then(result => {
                         this.plugins = result;
                         let keys = Object.keys(this.plugins);
+                        if(keys.length === 0) {
+                            this.finishedLoading();
+                            return;
+                        }
                         let loadedCount = 0;
                         keys.forEach((name, i) => {
                             const config = this.plugins[name];
