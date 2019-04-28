@@ -124,7 +124,7 @@ class Vector {
 }
 
 class Shape {
-    constructor(x, y, color) {
+    constructor(x, y) {
         this.x = x;
         this.y = y;
         this.showFill = true;
@@ -132,7 +132,7 @@ class Shape {
 
         this.angle = 0;
 
-        this.color = new Color(color);
+        this.color = new Color(0);
         this.stroke = new Color(0);
         this.dash = [];
         this.strokeWidth = 1;
@@ -271,7 +271,7 @@ class ShapeGroup {
 
 class Pic extends Shape {
     constructor(src, x = 0, y = 0, width, height, fn) {
-        super(x, y, 0);
+        super(x, y);
         this.image = new Image();
         this.src = src;
 
@@ -337,7 +337,7 @@ class Point extends Shape {
 
 class Line extends Shape {
     constructor(x1, y1, x2, y2) {
-        super(x1, y1, new Color(0));
+        super(x1, y1);
 
         if (x1 instanceof Vector && y1 instanceof Vector) {
             this.x = x1.x;
@@ -405,8 +405,8 @@ class Line extends Shape {
 }
 
 class Rect extends Shape {
-    constructor(x = 0, y = 0, w = 5, h = 5, color = 'black') {
-        super(x, y, color);
+    constructor(x = 0, y = 0, w = 5, h = 5) {
+        super(x, y);
         this.width = w;
         this.height = h;
     }
@@ -435,8 +435,8 @@ class Rect extends Shape {
 }
 
 class Circle extends Shape {
-    constructor(x = 0, y = 0, radius = 5, color = 'black') {
-        super(x, y, color);
+    constructor(x = 0, y = 0, radius = 5) {
+        super(x, y);
         this.size = radius;
     }
 
@@ -472,7 +472,7 @@ class Circle extends Shape {
 
 class Triangle extends Shape {
     constructor(x1, y1, x2, y2, x3, y3) {
-        super(x1, y1, new Color(0));
+        super(x1, y1);
         this.x2 = x2;
         this.y2 = y2;
         this.x3 = x3;
@@ -597,7 +597,7 @@ class BarGraph extends ShapeGroup {
 
 class Text extends Shape {
     constructor(string = "undefined", x = 0, y = 0, fontSize = 20) {
-        super(x, y, 0);
+        super(x, y);
 
         this.string = string;
 

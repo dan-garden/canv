@@ -34,27 +34,27 @@ new Canv('canvas', {
             const exists = this.changeDirectory(args.join(" ") || this.path);
             this.updatePrefix();
             if(!exists) {
-                return new Error("Directory doesn't exist")
+                throw new Error("Directory not found");
             }
         });
 
         cmd.registerCommand("open", args => {
             const found = this.open(args.join(" "));
-
             if(found) {
                 const lines = found.content.split("\n");
                 lines.forEach(line => {
                     cmd.newLine(line);
                 })
-            } else {
-                return found;
             }
         });
+
+        cmd.registerCommand("del", args => {
+            return this.delete(args.join(" "));
+        })
 
 
         cmd.registerCommand("touch", args => {
             const filename = args.join(" ");
-
             if(filename) {
                 this.getCurrent().push({
                     name: filename,
@@ -62,13 +62,11 @@ new Canv('canvas', {
                     content: ""
                 });
             }
-
             this.updateStructure();
         });
 
         cmd.registerCommand("mkdir", args => {
             const filename = args.join(" ");
-
             if(filename) {
                 this.getCurrent().push({
                     name: filename,
@@ -76,21 +74,54 @@ new Canv('canvas', {
                     content: []
                 });
             }
-            
             this.updateStructure();
         });
 
 
         cmd.registerCommand("edit", args => {
-            const found = this.open(args.shift());
-
+            const filename = args.shift();
+            const found = this.open(filename);
             if(found) {
-                found.content = args.join(" ");
-                this.updateStructure();
-            } else {
-                // return found;
+                this.edit(filename, args.join(" "));
             }
         });
+
+        cmd.registerCommand("editor", args => {  
+            const filename = args.shift();
+            const found = this.open(filename);
+
+            if(found) {
+                const textarea = document.createElement("textarea");
+                textarea.value = found.content;
+                const button = document.createElement('button');
+                button.innerHTML = 'Save';
+                const editor = new cmd.popup(filename, [textarea, document.createElement("br"), button]);
+                button.onclick = () => {
+                    editor.close();
+                    this.edit(filename, textarea.value);
+                };
+            }
+        })
+    },
+
+    edit(filename, content) {
+        const found = this.open(filename);
+        if(found) {
+            found.content = content;
+            this.updateStructure();
+        }
+    },
+
+    delete(filename) {
+        if(filename) {
+            const cur = this.getCurrent();        
+            cur.forEach((file, i) => {
+                if(file.name === filename) {
+                    cur.splice(i, 1);
+                }
+            });
+            this.updateStructure();
+        }
     },
 
     open(filename) {
@@ -102,7 +133,7 @@ new Canv('canvas', {
             if(search && search[0]) {
                 return search[0].type === "file" ? search[0] : undefined;
             } else {
-                return new Error("File does not exist");
+                throw new Error('File not found')
             }
         }
     },

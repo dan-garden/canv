@@ -9,6 +9,7 @@ class Term extends Canv {
 
                 magenta: new Color(213, 31, 222),
                 orange: new Color(255, 140, 0),
+                yellow: new Color(255, 255, 0),
                 red: new Color(255, 100, 100),
                 green: new Color(100, 255, 100),
                 blue: new Color(100, 100, 255)
@@ -25,6 +26,7 @@ class Term extends Canv {
                 this.prefix = "$ ";
                 this.lines = [];
                 this.functions = [];
+                this.overlays = [];
                 this.commands = {};
                 this.events = {};
                 this.history = localStorage["cli-history"] ?
@@ -35,9 +37,9 @@ class Term extends Canv {
                 this.view = new ShapeGroup;
 
                 this.maxHistory = 100;
-                this.lineHeight = 12;
+                this.lineHeight = 14;
                 this.fontFamily = "monospace";
-                this.fontSize = 12;
+                this.fontSize = 14;
                 this.textIndent = 0;
 
                 this.cursorPos = false;
@@ -49,6 +51,10 @@ class Term extends Canv {
                 this.loadPlugins();
             },
 
+            visible() {
+                return this.overlays.length === 0;
+            },
+
             clearHistory() {
                 this.history = [];
                 localStorage["cli-history"] = [];
@@ -56,96 +62,100 @@ class Term extends Canv {
 
             bindPaste() {
                 window.addEventListener("paste", e => {
-                    e.preventDefault();
-                    const pasteData = e.clipboardData.getData("text");
-                    if (this.cursorPos === false) {
-                        this.lines[this.lines.length - 1].text += pasteData;
-                    } else {
-                        const lastLine = this.lines[this.lines.length - 1].text;
-                        const newLine = lastLine.substring(0, this.cursorPos) +
-                            pasteData +
-                            lastLine.substring(this.cursorPos, lastLine.length);
+                    if(this.visible()) {
+                        e.preventDefault();
+                        const pasteData = e.clipboardData.getData("text");
+                        if (this.cursorPos === false) {
+                            this.lines[this.lines.length - 1].text += pasteData;
+                        } else {
+                            const lastLine = this.lines[this.lines.length - 1].text;
+                            const newLine = lastLine.substring(0, this.cursorPos) +
+                                pasteData +
+                                lastLine.substring(this.cursorPos, lastLine.length);
 
-                        this.lines[this.lines.length - 1].text = newLine;
-                        this.cursorPos += pasteData.length;
+                            this.lines[this.lines.length - 1].text = newLine;
+                            this.cursorPos += pasteData.length;
+                        }
                     }
                 });
             },
 
             bindKeyDown() {
                 window.addEventListener("keydown", e => {
-                    if ((e.ctrlKey || e.metaKey) && e.key === "v") {
-                        // e.preventDefault();
-                        return;
-                    }
-                    const lastLineIndex = this.lines.length - 1;
-                    const lastLine = this.lines[lastLineIndex].text;
-                    if (e.key === "ArrowLeft") {
-                        if (this.cursorPos === false) {
-                            this.cursorPos = lastLine.length - 1;
-                        } else {
-                            if (this.cursorPos > this.prefix.length) {
-                                this.cursorPos--;
-                            }
-                        }
-                        return;
-                    }
-                    if (e.key === "ArrowRight") {
-                        if (this.cursorPos === false) {
+                    if(this.visible()) {
+                        if ((e.ctrlKey || e.metaKey) && e.key === "v") {
+                            // e.preventDefault();
                             return;
                         }
-                        if (this.cursorPos < lastLine.length - 1) {
-                            this.cursorPos++;
-                        } else if (this.cursorPos === lastLine.length - 1) {
-                            this.cursorPos = false;
-                        }
-                        return;
-                    }
-
-                    if (e.key === "ArrowUp") {
-                        this.historyChange(-1);
-                    } else if (e.key === "ArrowDown") {
-                        this.historyChange(1);
-                    } else if (e.key === "Enter") {
-                        e.preventDefault();
-                        const command = lastLine.replace(this.prefix, "");
-                        this.updateHistory(command);
-                        const line = this.run(command);
-                        if (line) {
-                            this.newLine(line);
-                        } else {
-
-                        }
-                        this.newLine();
-                    } else if (e.key === "Backspace" || e.key === "Delete") {
-                        e.preventDefault();
-                        if (lastLine !== this.prefix) {
+                        const lastLineIndex = this.lines.length - 1;
+                        const lastLine = this.lines[lastLineIndex].text;
+                        if (e.key === "ArrowLeft") {
                             if (this.cursorPos === false) {
-                                this.lines[lastLineIndex].text = lastLine.substring(0, lastLine.length - 1);
-                            } else if (this.cursorPos > this.prefix.length) {
-                                this.lines[lastLineIndex].text = lastLine.slice(0, this.cursorPos - 1) + lastLine.slice(this.cursorPos);
-                                if (this.cursorPos === lastLine.length) {
-                                    this.cursorPos = false;
-                                } else {
+                                this.cursorPos = lastLine.length - 1;
+                            } else {
+                                if (this.cursorPos > this.prefix.length) {
                                     this.cursorPos--;
                                 }
                             }
+                            return;
                         }
-                    } else if (e.key.length === 1) {
-                        let maxWidth = (this.width / this.charWidth) - 1;
-                        if (this.lines[lastLineIndex].text.length >= maxWidth) {
-                            this.lines.push(new this.line(
-                                "",
-                                this.colors.primary
-                            ));
-                            this.lines[lastLineIndex + 1].text += e.key;
-                        } else {
+                        if (e.key === "ArrowRight") {
                             if (this.cursorPos === false) {
-                                this.lines[lastLineIndex].text += e.key;
-                            } else {
-                                const newLine = lastLine.substring(0, this.cursorPos) + e.key + lastLine.substring(this.cursorPos, lastLine.length);
-                                this.lines[lastLineIndex].text = newLine;
+                                return;
+                            }
+                            if (this.cursorPos < lastLine.length - 1) {
                                 this.cursorPos++;
+                            } else if (this.cursorPos === lastLine.length - 1) {
+                                this.cursorPos = false;
+                            }
+                            return;
+                        }
+    
+                        if (e.key === "ArrowUp") {
+                            this.historyChange(-1);
+                        } else if (e.key === "ArrowDown") {
+                            this.historyChange(1);
+                        } else if (e.key === "Enter") {
+                            e.preventDefault();
+                            const command = lastLine.replace(this.prefix, "");
+                            this.updateHistory(command);
+                            command.split(" &&& ").forEach(c => {
+                                const line = this.run(c);
+                                if (line) {
+                                    this.newLine(line);
+                                }
+                            });
+                            this.newLine();
+                        } else if (e.key === "Backspace" || e.key === "Delete") {
+                            e.preventDefault();
+                            if (lastLine !== this.prefix) {
+                                if (this.cursorPos === false) {
+                                    this.lines[lastLineIndex].text = lastLine.substring(0, lastLine.length - 1);
+                                } else if (this.cursorPos > this.prefix.length) {
+                                    this.lines[lastLineIndex].text = lastLine.slice(0, this.cursorPos - 1) + lastLine.slice(this.cursorPos);
+                                    if (this.cursorPos === lastLine.length) {
+                                        this.cursorPos = false;
+                                    } else {
+                                        this.cursorPos--;
+                                    }
+                                }
+                            }
+                        } else if (e.key.length === 1) {
+                            let maxWidth = (this.width / this.charWidth) - 1;
+                            if (this.lines[lastLineIndex].text.length >= maxWidth) {
+                                this.lines.push(new this.line(
+                                    "",
+                                    this.colors.primary
+                                ));
+                                this.lines[lastLineIndex + 1].text += e.key;
+                            } else {
+                                if (this.cursorPos === false) {
+                                    this.lines[lastLineIndex].text += e.key;
+                                } else {
+                                    const newLine = lastLine.substring(0, this.cursorPos) + e.key + lastLine.substring(this.cursorPos, lastLine.length);
+                                    this.lines[lastLineIndex].text = newLine;
+                                    this.cursorPos++;
+                                }
                             }
                         }
                     }
@@ -154,7 +164,7 @@ class Term extends Canv {
 
 
             newLine(line, color) {
-                if (!line) {
+                if (typeof line === "undefined") {
                     this.lines.push(new this.line(
                         this.prefix,
                         this.colors.primary
@@ -218,6 +228,8 @@ class Term extends Canv {
                     //     this.lines.push({text: line, color}); 
                     // })
                     // return false;
+                } else if(typeof text === "function") {
+                    color = this.colors.yellow;  
                 } else if (typeof text === "undefined") {
                     color = this.colors.grey;
                 } else if(text instanceof Error) {

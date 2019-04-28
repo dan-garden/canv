@@ -14,7 +14,7 @@ new Canv('canvas', {
             blue: new Color(100, 100, 255)
         };
         
-        
+        // cmd.colors = this.colors;
 
         cmd.registerCommand("funky-colors", (params) => {
             if(params[0] === "off") {
