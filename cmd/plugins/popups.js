@@ -19,7 +19,7 @@ new Canv('canvas', {
                 display: none;
                 text-align: center;
                 color: ${cmd.colors.primary};
-                background-color: ${cmd.colors.secondary};
+                background-color: ${cmd.colors.secondary.opacity(0.8)};
                 font-family: ${cmd.fontFamily};
             }
 
@@ -49,7 +49,6 @@ new Canv('canvas', {
                 this.title = title;
 
                 this.body = body;
-                this.build();
                 this.open();
             }
 
@@ -90,8 +89,38 @@ new Canv('canvas', {
             }
 
             open() {
+                this.build();
                 this.dom.style.display = "block";
                 cmd.overlays.push(this);
+            }
+        };
+
+
+        cmd.editor = class extends cmd.popup {
+            constructor(title, value, onclose) {
+                super();
+                this.close();
+                const textarea = document.createElement("textarea");
+                textarea.value = value;
+
+                if(textarea.addEventListener ) {
+                    textarea.addEventListener('keydown',this.keyHandler,false);
+                } else if(textarea.attachEvent ) {
+                    textarea.attachEvent('onkeydown',this.keyHandler); /* damn IE hack */
+                }
+
+                const button = document.createElement('button');
+                button.innerHTML = 'Save';
+                this.title = title;
+                this.body = [textarea, document.createElement("br"), button];
+                this.open();
+
+                button.onclick = () => {
+                    this.close();
+                    if(typeof onclose === "function") {
+                        onclose(textarea.value);
+                    }
+                };
             }
         }
     }

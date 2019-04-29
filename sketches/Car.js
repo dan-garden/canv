@@ -16,6 +16,7 @@ new Canv('canvas', {
         )
 
         this.track = new ShapeGroup;
+        this.road = new ShapeGroup();
     },
 
     update() {
@@ -54,12 +55,29 @@ new Canv('canvas', {
             this.car.y = this.height+this.carH;
         }
 
-        
+        const moveX = this.car.x < this.width / 2 ?
+            (-(this.car.x - (this.width / 2)) * 0.01) :
+            -((this.car.x - (this.width / 2)) * 0.01)
+
+        const moveY = this.car.y < this.height / 2 ?
+            (-(this.car.y - (this.height / 2)) * 0.01) :
+            -((this.car.y - (this.height / 2)) * 0.01)
+
+
+        this.road.moveX(moveX);
+        this.road.moveY(moveY);
+
+        if(this.frames % 20 === 0) {
+            const blob = new Circle(this.randomWidth, this.randomHeight, Canv.random(10, 100));
+            blob.color = Color.random();
+            this.road.add(blob);
+        }
     },
 
     draw() {
-        // this.background = new Color(80);
+        this.background = new Color(80);
         this.add(this.track);
+        this.add(this.road);
 
         this.add(this.car);
     }

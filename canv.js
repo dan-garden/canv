@@ -103,7 +103,15 @@ class Color {
     }
 
     shade(n) {
-        return new Color(this.r + n, this.g + n, this.b + n);
+        return new Color(this.r + n, this.g + n, this.b + n, this.a);
+    }
+
+    opacity(n) {
+        return new Color(this.r, this.g, this.b, n);
+    }
+
+    invert() {
+        return new Color(255-this.r, 255-this.g, 255-this.b, this.a);
     }
 
     randomize() {

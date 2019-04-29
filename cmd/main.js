@@ -15,11 +15,12 @@ class Term extends Canv {
                 blue: new Color(100, 100, 255)
             },
             line: class {
-                constructor(text, color, indent=0) {
+                constructor(text, color, bg) {
                     this.text = text;
                     this.color = color;
-                    this.indent = indent;
-
+                    if(bg) {
+                        this.background = bg;
+                    }
                 }
             },
             setup() {
@@ -119,7 +120,7 @@ class Term extends Canv {
                             e.preventDefault();
                             const command = lastLine.replace(this.prefix, "");
                             this.updateHistory(command);
-                            command.split(" &&& ").forEach(c => {
+                            command.split(" && ").forEach(c => {
                                 const line = this.run(c);
                                 if (line) {
                                     this.newLine(line);
@@ -210,6 +211,7 @@ class Term extends Canv {
             },
 
             filterResult(text, color) {
+                let bg = undefined;
                 if (typeof text === "number") {
                     color = this.colors.magenta;
                 } else if (typeof text === "boolean") {
@@ -239,7 +241,8 @@ class Term extends Canv {
 
                 return new this.line(
                     text,
-                    color
+                    color,
+                    bg
                 );
             },
 
@@ -261,7 +264,8 @@ class Term extends Canv {
                 try {
                     let commands = Object.keys(this.commands);
                     let isCommand = false;
-                    commands.forEach(c => {
+                    for(let i = 0; i < commands.length; i++) {
+                        const c = commands[i];
                         if (command === c || command.startsWith(c + " ")) {
                             isCommand = true;
                             let params = command
@@ -272,7 +276,8 @@ class Term extends Canv {
                                 .map(param=>isNaN(param)?param:parseInt(param));
                             this.commands[c](params);
                         }
-                    });
+                    };
+
 
                     if (isCommand) {
                         return false;
@@ -295,15 +300,17 @@ class Term extends Canv {
             },
 
             updateHistory(command) {
-                this.history.push(command);
+                if(command!=="" && command != this.history[this.history.length-1]) {
+                    this.history.push(command);
 
-                if (this.history.length >= this.maxHistory) {
-                    this.history = this.history.slice(Math.max(this.history.length - this.maxHistory, 0))
+                    if (this.history.length >= this.maxHistory) {
+                        this.history = this.history.slice(Math.max(this.history.length - this.maxHistory, 0))
+                    }
+    
+                    this.curHistoryIndex = this.history.length;
+    
+                    localStorage.setItem("cli-history", JSON.stringify(this.history));
                 }
-
-                this.curHistoryIndex = this.history.length;
-
-                localStorage.setItem("cli-history", JSON.stringify(this.history));
             },
 
             historyChange(n) {
@@ -409,6 +416,13 @@ class Term extends Canv {
                         text.color = line.color || this.colors.primary;
                         text.fontFamily = this.fontFamily;
                         text.fontSize = this.fontSize;
+
+                        if(line.background) {
+                            const bg = new Rect(text.x, text.y + (this.lineHeight / 4), this.width, this.lineHeight);
+                            bg.color = line.background;
+                            this.add(bg);
+                        }
+
                         this.add(text);
 
                         if (i === this.lines.length - 1) {
@@ -420,8 +434,8 @@ class Term extends Canv {
                     const cursorPos = this.cursorPos === false ? this.lines[this.lines.length - 1].text.length : this.cursorPos;
 
                     this.cursor.x = this.textIndent + (this.charWidth * cursorPos);
-                    this.cursor.y = ((this.lines.length - 1) * this.lineHeight) + 2;
-                    this.cursor.height = this.fontSize;
+                    this.cursor.y = ((this.lines.length - 1) * this.lineHeight) + 3;
+                    this.cursor.height = this.lineHeight;
 
 
                     this.add(this.cursor);

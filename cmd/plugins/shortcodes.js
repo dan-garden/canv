@@ -45,11 +45,11 @@ new Canv('canvas', {
         });
 
 
-        cmd.registerEvent("newline", args => {
-            if(cmd.lines.length === 40) {
-                cmd.run("clear");
-            }
-        })
+        // cmd.registerEvent("newline", args => {
+        //     if(cmd.lines.length === Math.floor(cmd.height / cmd.lineHeight)) {
+        //         cmd.run("clear");
+        //     }
+        // })
 
     }
 })

@@ -1,6 +1,6 @@
 new Canv('canvas', {
     setup() {
-        cmd.registerCommand("makeshape", args => {
+        cmd.registerCommand("ms", args => {
             if(args.length > 0) {
                 let type = args.shift().toLowerCase();
                 type = type.charAt(0).toUpperCase() + type.slice(1);
@@ -16,7 +16,7 @@ new Canv('canvas', {
 
 
 
-        cmd.registerCommand("shapeaction", args => {
+        cmd.registerCommand("as", args => {
             if(args.length > 0) {
                 const shapeIndex = args.shift();
                 const shape = cmd.view.shapes[shapeIndex];

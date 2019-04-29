@@ -48,7 +48,7 @@ new Canv('canvas', {
             }
         });
 
-        cmd.registerCommand("del", args => {
+        cmd.registerCommand("rm", args => {
             return this.delete(args.join(" "));
         })
 
@@ -91,17 +91,22 @@ new Canv('canvas', {
             const found = this.open(filename);
 
             if(found) {
-                const textarea = document.createElement("textarea");
-                textarea.value = found.content;
-                const button = document.createElement('button');
-                button.innerHTML = 'Save';
-                const editor = new cmd.popup(filename, [textarea, document.createElement("br"), button]);
-                button.onclick = () => {
-                    editor.close();
-                    this.edit(filename, textarea.value);
-                };
+                const editor = new cmd.editor(filename, found.content, val => {
+                    this.edit(filename, val);
+                });
             }
         })
+    },
+
+    keyHandler(e) {
+        var TABKEY = 9;
+        if(e.keyCode == TABKEY) {
+            this.value += "\t";
+            if(e.preventDefault) {
+                e.preventDefault();
+            }
+            return false;
+        }
     },
 
     edit(filename, content) {

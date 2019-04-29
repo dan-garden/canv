@@ -1,5 +1,7 @@
 new Canv('canvas', {
     setup() {
+        this.stars = new ShapeGroup();
+        cmd.view.add(this.stars);
         cmd.registerFunction(() => {
             const colors = [
                 "white",
@@ -9,7 +11,7 @@ new Canv('canvas', {
             ];
             const rand = Canv.random(0, 2);
             const color = colors[rand];
-            cmd.view.add(
+            this.stars.add(
                 new Circle(
                     Canv.random(cmd.width),
                     Canv.random(cmd.height),
@@ -26,8 +28,8 @@ new Canv('canvas', {
             -((this.mouseY - (this.height/2)) * 0.03)
 
 
-            cmd.view.moveX(moveX);
-            cmd.view.moveY(moveY); 
+            this.stars.moveX(moveX);
+            this.stars.moveY(moveY); 
         });
     }
 })

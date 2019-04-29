@@ -1,5 +1,5 @@
 {
-    "directory-system": {},
+    "dir": {},
     "shortcodes": {},
     "print": {},
     "line-numbers": {},
@@ -9,5 +9,7 @@
     "get": {},
     "shape-maker": {},
     "localstorage": {},
-    "popups": {}
+    "popups": {},
+    "google": {},
+    "notes": {}
 }
