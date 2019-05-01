@@ -14,6 +14,10 @@ new Canv('canvas', {
             return args.join(" ");
         })
 
+        cmd.registerCommand("reload", args => {
+            document.location.reload();
+        })
+
 
         cmd.registerCommand("load", args => {
             const type = args.shift();

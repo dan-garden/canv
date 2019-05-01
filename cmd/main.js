@@ -119,14 +119,7 @@ class Term extends Canv {
                         } else if (e.key === "Enter") {
                             e.preventDefault();
                             const command = lastLine.replace(this.prefix, "");
-                            this.updateHistory(command);
-                            command.split(" && ").forEach(c => {
-                                const line = this.run(c);
-                                if (line) {
-                                    this.newLine(line);
-                                }
-                            });
-                            this.newLine();
+                            this.run(command);
                         } else if (e.key === "Backspace" || e.key === "Delete") {
                             e.preventDefault();
                             if (lastLine !== this.prefix) {
@@ -183,9 +176,10 @@ class Term extends Canv {
                     }
 
                     this.lines.push(line);
-                    this.cursorPos = false;
                 }
-
+                
+                this.curHistoryIndex = this.history.length;
+                this.cursorPos = false;
                 this.triggerEvent("newline");
             },
 
@@ -234,6 +228,7 @@ class Term extends Canv {
                     color = this.colors.yellow;  
                 } else if (typeof text === "undefined") {
                     color = this.colors.grey;
+                    return;
                 } else if(text instanceof Error) {
                     color = this.colors.red;
                 }
@@ -258,7 +253,22 @@ class Term extends Canv {
                 return lastLine.text;
             },
 
-            run(command) {
+            run(command, nl=true) {
+                if(nl) {
+                    this.updateHistory(command);
+                }
+                command.split(" && ").forEach(c => {
+                    const line = this.process(c);
+                    if (line) {
+                        this.newLine(line);
+                    }
+                });
+                if(nl) {
+                    this.newLine();
+                }
+            },
+
+            process(command, nl) {
                 let line = new this.line("", this.colors.primary);
 
                 try {
@@ -273,8 +283,12 @@ class Term extends Canv {
                                 .trim()
                                 .split(' ')
                                 .filter(p => p != "")
-                                .map(param=>isNaN(param)?param:parseInt(param));
-                            this.commands[c](params);
+                                .map(param=>isNaN(param)?param:parseInt(param))
+                                .join(' ')
+                                .replace( /\{{.+?\}}/g, (match, offset, string) => {
+                                    return eval(match);
+                                }).split(' ');
+                                this.commands[c](params);
                         }
                     };
 
@@ -307,7 +321,6 @@ class Term extends Canv {
                         this.history = this.history.slice(Math.max(this.history.length - this.maxHistory, 0))
                     }
     
-                    this.curHistoryIndex = this.history.length;
     
                     localStorage.setItem("cli-history", JSON.stringify(this.history));
                 }

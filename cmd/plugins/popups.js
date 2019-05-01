@@ -115,6 +115,7 @@ new Canv('canvas', {
                 this.body = [textarea, document.createElement("br"), button];
                 this.open();
 
+                textarea.focus();
                 button.onclick = () => {
                     this.close();
                     if(typeof onclose === "function") {

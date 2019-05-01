@@ -264,6 +264,10 @@ class ShapeGroup {
 
     }
 
+    clear() {
+        this.shapes = [];
+    }
+
     moveX(n) {
         Object.values(this.shapes).forEach(s => s.moveX(n))
     }

@@ -39,12 +39,18 @@ new Canv('canvas', {
         });
 
         cmd.registerCommand("open", args => {
-            const found = this.open(args.join(" "));
-            if(found) {
-                const lines = found.content.split("\n");
-                lines.forEach(line => {
-                    cmd.newLine(line);
-                })
+            const filename = args.join(" ");
+            try {
+                new URL(filename);
+                window.open(filename);
+            } catch {
+                const found = this.open(filename);
+                if(found) {
+                    const lines = found.content.split("\n");
+                    lines.forEach(line => {
+                        cmd.newLine(line);
+                    })
+                }
             }
         });
 
@@ -56,25 +62,15 @@ new Canv('canvas', {
         cmd.registerCommand("touch", args => {
             const filename = args.join(" ");
             if(filename) {
-                this.getCurrent().push({
-                    name: filename,
-                    type: "file",
-                    content: ""
-                });
+                this.newFile(filename, "");
             }
-            this.updateStructure();
         });
 
         cmd.registerCommand("mkdir", args => {
             const filename = args.join(" ");
             if(filename) {
-                this.getCurrent().push({
-                    name: filename,
-                    type: "dir",
-                    content: []
-                });
+                this.newDir(filename);
             }
-            this.updateStructure();
         });
 
 
@@ -88,12 +84,28 @@ new Canv('canvas', {
 
         cmd.registerCommand("editor", args => {  
             const filename = args.shift();
+            let found = this.open(filename);
+
+            const editor = new cmd.editor(filename, found.content, val => {
+                this.edit(filename, val);
+            });
+        });
+
+        cmd.registerCommand("exec", args => {
+            const filename = args.shift();
             const found = this.open(filename);
 
             if(found) {
-                const editor = new cmd.editor(filename, found.content, val => {
-                    this.edit(filename, val);
-                });
+                const split = filename.split(".");
+                const ext = split[split.length-1];
+                if(ext === "js") {
+                    eval.apply(cmd, [found.content]);
+                } else if(ext === "dan") {
+                    const command = found.content.split("\n")
+                    .filter(l=>l.trim()!=="")
+                    .join(" && ");
+                    cmd.run(command, false);
+                }
             }
         })
     },
@@ -107,6 +119,24 @@ new Canv('canvas', {
             }
             return false;
         }
+    },
+
+    newFile(name, content) {
+        this.getCurrent().push({
+            name,
+            type: "file",
+            content
+        });
+        this.updateStructure();
+    },
+
+    newDir(name) {
+        this.getCurrent().push({
+            name,
+            type: "dir",
+            content: []
+        });
+        this.updateStructure();
     },
 
     edit(filename, content) {
@@ -135,6 +165,8 @@ new Canv('canvas', {
             const search = cur.filter(file => {
                 return file.name === filename;
             });
+
+            
             if(search && search[0]) {
                 return search[0].type === "file" ? search[0] : undefined;
             } else {

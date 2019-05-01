@@ -66,7 +66,8 @@ new Canv('canvas', {
     },
     update() {
         this.obj = this.cube(100, 100, 100, 100);
-        this.obj.stroke = new Color(255);
+
+        this.obj.color = new Color(255);
     },
     draw() {
         this.add(this.obj);
