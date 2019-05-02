@@ -111,7 +111,7 @@ class Color {
     }
 
     invert() {
-        return new Color(255-this.r, 255-this.g, 255-this.b, this.a);
+        return new Color(255 - this.r, 255 - this.g, 255 - this.b, this.a);
     }
 
     randomize() {
@@ -128,6 +128,12 @@ class Vector {
     constructor(x, y) {
         this.x = x;
         this.y = y;
+    }
+
+    setPos(x, y) {
+        this.x = x;
+        this.y = y;
+        return this;
     }
 }
 
@@ -299,7 +305,7 @@ class Pic extends Shape {
             if (!this.height) {
                 this.height = this.image.naturalHeight;
             }
-            if(typeof fn === "function") {
+            if (typeof fn === "function") {
                 fn(this);
             }
         };
@@ -670,6 +676,22 @@ class Canv {
         return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
+    map(n, start1, stop1, start2, stop2, withinBounds) {
+        var newval = (n - start1) / (stop1 - start1) * (stop2 - start2) + start2;
+        if (!withinBounds) {
+            return newval;
+        }
+        if (start2 < stop2) {
+            return this.constrain(newval, start2, stop2);
+        } else {
+            return this.constrain(newval, stop2, start2);
+        }
+    };
+
+    constrain(n, low, high) {
+        return Math.max(Math.min(n, high), low);
+    };
+
     set width(x) {
         this.canvas.width = x;
     }
@@ -747,7 +769,7 @@ class Canv {
         this.background = new Color(255);
 
         if (config && typeof config === "object") {
-            if(!config.width && !config.height) {
+            if (!config.width && !config.height) {
                 config.fullscreen = true;
             }
 
@@ -841,11 +863,11 @@ class Canv {
     }
 
     write(str, x, y) {
-        if(x===undefined) {
+        if (x === undefined) {
             x = this.halfWidth();
         }
 
-        if(y===undefined) {
+        if (y === undefined) {
             y = this.halfHeight();
         }
 
