@@ -88,6 +88,7 @@ new Canv('canvas', {
 
             const editor = new cmd.editor(filename, found.content, val => {
                 this.edit(filename, val);
+                // cmd.run("exec "+filename);
             });
         });
 

@@ -281,13 +281,8 @@ class Term extends Canv {
                             let params = command
                                 .replace(c, '')
                                 .trim()
-                                .split(' ')
-                                .filter(p => p != "")
-                                .map(param=>isNaN(param)?param:parseInt(param))
-                                .join(' ')
-                                .replace( /\{{.+?\}}/g, (match, offset, string) => {
-                                    return eval(match);
-                                }).split(' ');
+                                .split(' ');
+                            params = this.filterParams(params);
                                 this.commands[c](params);
                         }
                     };
@@ -311,6 +306,25 @@ class Term extends Canv {
                 }
 
                 return line;
+            },
+
+            filterParams(params) {
+                return params.filter(p => p != "")
+                .map(param=>isNaN(param)?param:parseInt(param))
+                .join(' ')
+                .replace( /\{{.+?\}}/g, (match, offset, string) => {
+                    return eval(match);
+                }).split(' ');
+            },
+
+            getParams() {
+                let line = this.lines[this.lines.length-1].text;
+                let params = line.replace(this.prefix, "");
+                params = params.split(" ");
+                params.shift();
+                params.shift();
+                params = this.filterParams(params);
+                return params;
             },
 
             updateHistory(command) {
