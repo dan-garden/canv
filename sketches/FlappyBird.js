@@ -57,7 +57,7 @@ new Canv('canvas', {
             this.bird.moveY(3);
         }
         
-        if(this.frames === 1 || this.frames % 50 === 0) {
+        if(this.frames === 1 || this.frames % 100 === 0) {
             this.gap = Canv.random(20, 150);
 
             const top = new this.Pipe("top", (this.height/2)-this.gap, this.width, this.height);
@@ -73,10 +73,14 @@ new Canv('canvas', {
                 this.pipes[i].moveX(-2);
             }
         }
+
+        if(this.bird.body.y > this.halfHeight()) {
+            this.pressKey(" ", 50);
+        }
     },
 
     draw() {
-        // this.background = new Color(160, 210, 255);
+        this.background = new Color(160, 210, 255);
         this.pipes.forEach(pipe => this.add(pipe));
         this.add(this.bird);
         this.add(new Text(this.points, 0, 15))

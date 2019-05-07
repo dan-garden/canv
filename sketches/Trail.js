@@ -5,7 +5,7 @@ const trail = new Canv('canvas', {
     },
 
     update() {
-        // this.count++;
+        
     },
 
     draw() {

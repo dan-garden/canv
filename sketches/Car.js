@@ -1,4 +1,4 @@
-new Canv('canvas', {
+const car = new Canv('canvas', {
     fullscreen: true,
     speed: 0,
     maxSpeed: 10,
@@ -77,7 +77,7 @@ new Canv('canvas', {
     draw() {
         this.background = new Color(80);
         this.add(this.track);
-        this.add(this.road);
+        // this.add(this.road);
 
         this.add(this.car);
     }

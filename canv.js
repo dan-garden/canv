@@ -135,6 +135,13 @@ class Vector {
         this.y = y;
         return this;
     }
+
+    add(v) {
+        if(v instanceof Vector) {
+            this.x += v.x;
+            this.y += v.y;
+        }
+    }
 }
 
 class Shape {
@@ -231,32 +238,50 @@ class ShapeGroup {
     }
 
     set color(x) {
-        Object.values(this.shapes).forEach(shape => shape.color = x);
+        this.forEach(shape => shape.color = x);
     }
 
     setColor(x) {
-        Object.values(this.shapes).forEach(shape => shape.color = x);
+        this.forEach(shape => shape.color = x);
         return this;
     }
 
     set strokeWidth(x) {
-        Object.values(this.shapes).forEach(shape => shape.strokeWidth = x);
+        this.forEach(shape => shape.strokeWidth = x);
     }
 
     set stroke(x) {
-        Object.values(this.shapes).forEach(shape => shape.stroke = x);
+        this.forEach(shape => shape.stroke = x);
+    }
+
+    remove(i) {
+        if(this[i]) {
+            delete this[i];
+        }
+
+        this.shapes.splice(i, 1);
+        return this;
+    }
+    
+    forEach(fn) {
+        if(typeof fn === "function") {
+            for(let i = this.length-1; i >= 0; --i) {
+                fn(this.shapes[i], i);
+            }
+        }
+        return this;
     }
 
     noStroke() {
-        Object.values(this.shapes).forEach(shape => shape.noStroke());
+        this.forEach(shape => shape.noStroke());
     }
 
     noFill() {
-        Object.values(this.shapes).forEach(shape => shape.noFill());
+        this.forEach(shape => shape.noFill());
     }
 
     render(canv) {
-        Object.values(this.shapes).forEach(shape => shape.render(canv));
+        this.forEach(shape => shape.render(canv));
     }
 
     contains(x, y) {
@@ -275,15 +300,21 @@ class ShapeGroup {
     }
 
     moveX(n) {
-        Object.values(this.shapes).forEach(s => s.moveX(n))
+        this.forEach(s => {
+            s.moveX(n)
+        })
     }
 
     moveY(n) {
-        Object.values(this.shapes).forEach(s => s.moveY(n))
+        this.forEach(s => s.moveY(n))
     }
 
     rotate(n) {
-        Object.values(this.shapes).forEach(shape => shape.angle += n);
+        this.forEach(shape => shape.angle += n);
+    }
+
+    get length() {
+        return this.shapes.length;
     }
 }
 
@@ -464,6 +495,14 @@ class Circle extends Shape {
 
     get radius() {
         return this.size;
+    }
+
+    shrink(n) {
+        this.size -= n;
+    }
+
+    grow(n) {
+        this.size += n;
     }
 
     contains(x, y) {
@@ -853,6 +892,23 @@ class Canv {
 
     keyDown(key) {
         return this.keysDown[key];
+    }
+
+    pressKey(keys, hold=10) {
+        if(typeof keys === "string") {
+            keys = [keys];
+        }
+
+        keys.forEach(key => {
+            if (!this.keysDown[key]) {
+                this.keysDown[key] = true;
+                setTimeout(() => {
+                    if (this.keysDown[key]) {
+                        delete this.keysDown[key];
+                    }
+                }, hold);
+            }
+        });
     }
 
     stop() {

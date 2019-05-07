@@ -13,7 +13,15 @@
 <body>
     <!-- <select id="sketches"></select> -->
     <canvas></canvas>
-    <script id="switch" src="sketches/Trail.js"></script>
+    <script id="change"></script>
+
+    <script>
+        const search = document.location.search.replace("?q=", "");
+        const sketchName = search!==""?search:"Pong";
+
+        const change = document.querySelectorAll("#change")[0];
+        change.src = `sketches/${sketchName}.js`;
+    </script>
 </body>
 
 </html>
