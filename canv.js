@@ -114,6 +114,11 @@ class Color {
         return new Color(255 - this.r, 255 - this.g, 255 - this.b, this.a);
     }
 
+    greyscale() {
+        const s = (this.r + this.g + this.b) / 3;
+        return new Color(s, s, s, this.a);
+    }
+
     randomize() {
         const c = Color.random();
         this.r = c.r;
@@ -292,11 +297,13 @@ class ShapeGroup {
 
     add(n) {
         this.shapes.push(n);
+        return this;
 
     }
 
     clear() {
         this.shapes = [];
+        return this;
     }
 
     moveX(n) {
@@ -311,6 +318,7 @@ class ShapeGroup {
 
     rotate(n) {
         this.forEach(shape => shape.angle += n);
+        return this;
     }
 
     get length() {
@@ -796,6 +804,7 @@ class Canv {
         this.ctx = this.canvas.getContext('2d');
 
         this.frames = 0;
+        this.$pixels = false;
         this.$running = false;
 
         this.$updateDelay = 0;
@@ -960,25 +969,55 @@ class Canv {
         }
     }
 
+    filterPixels(filter) {
+        if(typeof filter === "function") {
+            const pixels = this.$pixels || this.getPixels();
+            for(let y = 0; y < pixels.length; y++) {
+                for(let x = 0; x < pixels[y].length; x++) {
+                    const color = pixels[y][x];
+                    pixels[y][x] = filter(color, x, y);
+                }
+            }
+            this.setPixels(pixels);
+        }
+    }
 
-    get pixels() {
+    invert() {
+        this.filterPixels(color => {return color.invert()});
+    }
+
+    getPixels(x=0, y=0, w=this.width, h=this.height) {
         const px = [];
-        const data = this.ctx.getImageData(0, 0, this.width, this.height).data;
-        const l = this.width * this.height;
+        const data = this.ctx.getImageData(x, y, w, h).data;
+        const l = w * h;
         for (let i = 0; i < l; i++) {
             let r = data[i * 4]; // Red
             let g = data[i * 4 + 1]; // Green
             let b = data[i * 4 + 2]; // Blue
             let a = data[i * 4 + 3]; // Alpha
-            let y = parseInt(i / this.width, 10);
-            if (!px[y]) {
-                px[y] = [];
+            let yc = parseInt(i / w, 10);
+            if (!px[yc]) {
+                px[yc] = [];
             }
-            let x = i - y * this.width;
+            let xc = i - yc * w;
             let color = new Color(r, g, b, a);
-            px[y][x] = color;
+            px[yc][xc] = color;
         }
+
+        this.$pixels = px;
         return px;
+    }
+
+    setPixels(data, x=0, y=0, w=this.width, h=this.height) {
+        const imageData = [];
+        for(let xc = 0; xc < h; xc++) {
+            for(let yc = 0; yc < w; yc++) {
+                const color = data[xc][yc];
+                imageData.push(color.r, color.g, color.b, color.a);
+            }
+        }
+        const clamped = new Uint8ClampedArray(imageData);
+        this.ctx.putImageData(new ImageData(clamped, w, h), x, y);
     }
 
     setDimensions(w, h) {
