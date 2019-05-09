@@ -1,6 +1,6 @@
 const star = new Canv('canvas', {
     setup() {
-        this.size = 1;
+        this.size = 10;
     },
 
     update() {
