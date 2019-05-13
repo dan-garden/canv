@@ -1,21 +1,24 @@
 class Morph {
-    constructor(shape, morphConfig) {
+    constructor(shape, morphConfigs) {
         this.shape = shape;
-
-        Object.keys(morphConfig).forEach(k => {
-            this[k] = morphConfig[k];
+        this.configs = morphConfigs.map(config => {
+            return {
+                val: config.min,
+                ...config
+            }
         });
-        
     }
 
     update() {
-        if(this.val <= this.min) {
-            this.change = this.speed;
-        } else if(this.val > this.max) {
-            this.change = -this.speed;
-        }
-        this.val += this.change;
-        eval(`this.shape.${this.alter} = this.val<this.min?this.min:this.val`);
+        this.configs.forEach(config => {
+            if(config.val <= config.min) {
+                config.step = config.speed;
+            } else if(config.val > config.max) {
+                config.step = -config.speed;
+            }
+            config.val += config.step;
+            eval(`this.shape.${config.alter} = config.val<config.min?config.min:config.val`);
+        })
     }
 
     render(canv) {
@@ -27,14 +30,11 @@ class Morph {
 const round = new Canv('canvas', {
     setup() {
 
-        this.morph = new Morph(new Circle(100, 100, 30).setColor(255), {
-            alter: "x",
-            val: 0,
-            min: 0,
-            max: this.width,
-            speed: 10,
-            change: 0.1
-        })
+        this.morph = new Morph(new Circle(this.halfWidth(),this.halfHeight(),30).setColor(255), [
+            {
+                
+            }
+        ])
     },
 
     update() {
