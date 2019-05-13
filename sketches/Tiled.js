@@ -72,4 +72,3 @@ const tiled = new Canv('canvas', {
         this.add(this.particles);
     }
 })
-
