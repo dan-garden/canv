@@ -119,6 +119,13 @@ class Color {
         return new Color(s, s, s, this.a);
     }
 
+    sepia() {
+        const r = (0.393*this.r) + (0.769*this.g) + (0.189*this.b);
+        const g = (0.349*this.r) + (0.686*this.g) + (0.168*this.b);
+        const b = (0.272*this.r) + (0.534*this.g) + (0.131*this.b);
+        return new Color(r, g, b, this.a);
+    }
+
     randomize() {
         const c = Color.random();
         this.r = c.r;
@@ -151,8 +158,8 @@ class Vector {
 
 class Shape {
     constructor(x, y) {
-        this.x = x;
-        this.y = y;
+        this.pos = new Vector(x, y);
+
         this.showFill = true;
         this.showStroke = false;
 
@@ -162,6 +169,22 @@ class Shape {
         this.stroke = new Color(0);
         this.dash = [];
         this.strokeWidth = 1;
+    }
+
+    set x(n) {
+        this.pos.x = n;
+    }
+
+    set y(n) {
+        this.pos.y = n;
+    }
+
+    get x() {
+        return this.pos.x;
+    }
+
+    get y() {
+        return this.pos.y;
     }
 
     noStroke() {
@@ -177,8 +200,7 @@ class Shape {
     }
 
     setPos(x, y) {
-        this.x = x;
-        this.y = y;
+        this.pos.setPos(x, y);
         return this;
     }
 
@@ -332,6 +354,8 @@ class Pic extends Shape {
         this.image = new Image();
         this.src = src;
 
+        this.$pixels = false;
+
         this.width = width;
         this.height = height;
 
@@ -356,6 +380,34 @@ class Pic extends Shape {
 
     set src(n) {
         this.image.src = n;
+    }
+
+
+    getPixels(x=0, y=0, w=this.width, h=this.height) {
+        const px = [];
+        var canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(this.image, 0, 0, w, h);
+        const data = ctx.getImageData(x, y, w, h).data;
+        const l = w * h;
+        for (let i = 0; i < l; i++) {
+            let r = data[i * 4]; // Red
+            let g = data[i * 4 + 1]; // Green
+            let b = data[i * 4 + 2]; // Blue
+            let a = data[i * 4 + 3]; // Alpha
+            let yc = parseInt(i / w, 10);
+            if (!px[yc]) {
+                px[yc] = [];
+            }
+            let xc = i - yc * w;
+            let color = new Color(r, g, b, a);
+            px[yc][xc] = color;
+        }
+
+        this.$pixels = px;
+        return px;
     }
 
     render(canv) {
@@ -975,7 +1027,10 @@ class Canv {
             for(let y = 0; y < pixels.length; y++) {
                 for(let x = 0; x < pixels[y].length; x++) {
                     const color = pixels[y][x];
-                    pixels[y][x] = filter(color, x, y);
+                    const changed = filter(color, x, y);
+                    if(color.toString()!==changed.toString()) {
+                        pixels[y][x] = changed;
+                    }
                 }
             }
             this.setPixels(pixels);

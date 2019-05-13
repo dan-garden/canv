@@ -1,16 +1,23 @@
 const glow = new Canv('canvas', {
     setup() {
-        this.size = 1000;
-        this.spread = 100;
+        this.size = this.width;
+        this.spread = 1;
         this.x = this.halfWidth(),
         this.y = this.halfHeight();
         
-        this.light = new Circle(this.halfWidth(), this.halfHeight(), 50);
+        this.light = new Circle(this.halfWidth(), this.halfHeight(), 10);
+        this.light.color = Color.random();
+        this.maxSpread = 100;
+        this.moveInterval = 10;
+
     },
     
     update() {
-        this.light.color = new Color(255);
-        this.light.setPos(this.mouseX, this.mouseY);
+
+        this.spread = (this.spread + 0.1) % this.maxSpread;
+        if(this.frames % this.moveInterval === 0) {
+            this.light.setPos(this.randomWidth, this.randomHeight);
+        }        
     },
 
 
@@ -21,7 +28,8 @@ const glow = new Canv('canvas', {
         const radius = this.size / 2;
         const count = radius / this.spread;
 
-        for(let i = this.spread; i >= 0; i--) {
+        // for(let i = this.spread; i >= 0; i--) {
+            for(let i = 0; i < this.spread; i++) {
             // const x = this.x - i;
             const x = this.map(
                 this.light.x,
@@ -60,6 +68,6 @@ const glow = new Canv('canvas', {
 
         
         this.add(this.bulb);
-        // this.add(this.light);
+        this.add(this.light);
     }
 })

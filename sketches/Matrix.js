@@ -33,6 +33,7 @@ new Canv('canvas', {
     },
 
     draw() {
+        this.background = 0;
         this.rain.forEach(c => this.add(c));
     }
 })
