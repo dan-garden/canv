@@ -75,6 +75,16 @@ class Color {
 
 
 
+        this.normalize();
+    }
+
+    toString(type = "rgba") {
+        return type == "rgba" ?
+            `rgba(${this.r}, ${this.g}, ${this.b}, ${this.a})` :
+            `rgb(${this.r}, ${this.g}, ${this.b})`
+    }
+
+    normalize() {
         if (this.r > 255) {
             this.r = 255;
         }
@@ -94,36 +104,41 @@ class Color {
         if (this.b < 0) {
             this.b = 0;
         }
-    }
-
-    toString(type = "rgba") {
-        return type == "rgba" ?
-            `rgba(${this.r}, ${this.g}, ${this.b}, ${this.a})` :
-            `rgb(${this.r}, ${this.g}, ${this.b})`
+        return this;
     }
 
     shade(n) {
-        return new Color(this.r + n, this.g + n, this.b + n, this.a);
+        this.r = this.r + n;
+        this.g = this.g + n;
+        this.b = this.b + n;
+        return this.normalize();
     }
 
     opacity(n) {
-        return new Color(this.r, this.g, this.b, n);
+        this.a = n;
+        return this;
     }
 
     invert() {
-        return new Color(255 - this.r, 255 - this.g, 255 - this.b, this.a);
+        this.r = 255 - this.r;
+        this.g = 255 - this.g;
+        this.b = 255 - this.b;
+        return this;
     }
 
     greyscale() {
         const s = (this.r + this.g + this.b) / 3;
-        return new Color(s, s, s, this.a);
+        this.r = s;
+        this.g = s;
+        this.b = s;
+        return this;
     }
 
     sepia() {
-        const r = (0.393*this.r) + (0.769*this.g) + (0.189*this.b);
-        const g = (0.349*this.r) + (0.686*this.g) + (0.168*this.b);
-        const b = (0.272*this.r) + (0.534*this.g) + (0.131*this.b);
-        return new Color(r, g, b, this.a);
+        this.r = (0.393*this.r) + (0.769*this.g) + (0.189*this.b);
+        this.g = (0.349*this.r) + (0.686*this.g) + (0.168*this.b);
+        this.b = (0.272*this.r) + (0.534*this.g) + (0.131*this.b);
+        return this;
     }
 
     randomize() {
@@ -133,6 +148,14 @@ class Color {
         this.b = c.b;
         this.a = c.a;
         return this;
+    }
+
+    saturate(value) {
+        var gray = 0.2989*this.r + 0.5870*this.g + 0.1140*this.b;
+        this.r = -gray * value + this.r * (1+value);
+        this.g = -gray * value + this.g * (1+value);
+        this.b = -gray * value + this.b * (1+value);
+        return this.normalize();
     }
 }
 
@@ -261,7 +284,7 @@ class ShapeGroup {
         Object.keys(shapes).forEach(shapeKey => {
             this[shapeKey] = shapes[shapeKey];
         })
-        this.shapes = shapes;
+        this.shapes = Object.values(shapes);
     }
 
     set color(x) {
@@ -336,6 +359,14 @@ class ShapeGroup {
 
     moveY(n) {
         this.forEach(s => s.moveY(n))
+    }
+
+    shrink(n) {
+        this.forEach(s => s.size -= n)
+    }
+
+    grow(n) {
+        this.forEach(s => s.size += n)
     }
 
     rotate(n) {
@@ -553,6 +584,11 @@ class Circle extends Shape {
         this.size = n;
     }
 
+    setRadius(n) {
+        this.size = n;
+        return this;
+    }
+
     get radius() {
         return this.size;
     }
@@ -570,20 +606,22 @@ class Circle extends Shape {
     }
 
     render(canv) {
-        canv.ctx.beginPath();
-        if (this.showStroke) {
-            canv.ctx.lineWidth = this.strokeWidth;
-            canv.ctx.strokeStyle = this.stroke.toString();
-            canv.ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
-            canv.ctx.stroke();
-        }
+        if(this.size >= 0) {
+            canv.ctx.beginPath();
+            if (this.showStroke) {
+                canv.ctx.lineWidth = this.strokeWidth;
+                canv.ctx.strokeStyle = this.stroke.toString();
+                canv.ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
+                canv.ctx.stroke();
+            }
 
-        if (this.showFill) {
-            canv.ctx.fillStyle = this.color.toString();
-            canv.ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
-            canv.ctx.fill();
+            if (this.showFill) {
+                canv.ctx.fillStyle = this.color.toString();
+                canv.ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
+                canv.ctx.fill();
+            }
+            canv.ctx.closePath();
         }
-        canv.ctx.closePath();
     }
 }
 

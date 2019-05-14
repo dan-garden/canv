@@ -1,8 +1,10 @@
 const tiled = new Canv('canvas', {
+    width: 150,
+    height: 150,
     setup() {
         this.particles = new ShapeGroup();
-        this.startSize = 30;
-        this.density = 1;
+        this.startSize = 10;
+        this.density = 3;
         this.shrinkSpeed = 1;
         this.fadeSpeed = -3;
         this.moveSpeed = 2;
@@ -12,6 +14,7 @@ const tiled = new Canv('canvas', {
 
         this.img = new Pic("images/test.jpg", 0, 0, this.width, this.height);
 
+        this.drawDelay = 2;
         this.background = 0;
     },
 
@@ -23,7 +26,7 @@ const tiled = new Canv('canvas', {
             const particle = new Circle(
                 randW,
                 this.height + this.startSize + randY,
-                Canv.random(this.startSize - 10, this.startSize + 10)
+                Canv.random(this.startSize - (this.startSize / 2), this.startSize + (this.startSize / 2))
             );
 
             particle.color = new Color(
@@ -62,11 +65,11 @@ const tiled = new Canv('canvas', {
         this.add(this.img);
         if(this.img.loaded) {
             this.filterPixels((color, x, y) => {
-                if(this.particles.contains(x, y)) {
-                    return color;
-                } else {
-                    return color;
+                if(Canv.random(0, 1) === 0 && this.particles.contains(x, y)) {
+                    return color.shade(-10);
                 }
+
+                return color;
             });
         }
         this.add(this.particles);
