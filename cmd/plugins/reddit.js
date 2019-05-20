@@ -8,7 +8,11 @@ new Canv('canvas', {
                 .then(result => {
                     if(result.data && result.data.children) {
                         result.data.children.forEach(post => {
-                            cmd.newLine(`[${post.data.id}] ${post.data.title}`, false, post.data.url);
+                            cmd.log(
+                                post.data.title,
+                                false,
+                                "https://reddit.com"+post.data.permalink
+                            );
                         })
                     }
                     cmd.newLine();

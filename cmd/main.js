@@ -464,7 +464,11 @@ class Term extends Canv {
                                 if(bg.contains(this.mouseX, this.mouseY)) {
                                     text.color = this.colors.link;
                                     if(this.mouseDown) {
-                                        window.open(line.link);
+                                        if(typeof line.link === "string") {
+                                            window.open(line.link);
+                                        } else if(typeof line.link === "function") {
+                                            line.link(this);
+                                        }
                                     }
                                 } else {
                                     text.color = origColor;
