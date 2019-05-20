@@ -48,6 +48,21 @@ new Canv('canvas', {
             cmd.log(eval(args.join(" ")));
         });
 
+        cmd.registerCommand("for", args => {
+            if(args.length < 4) {
+                throw new Error("Not enough params");
+            } else {
+                const start = args.shift();
+                const end = args.shift();
+                const inc = args.shift();
+                const fn = args.join(" ");
+
+                eval(`for(let i = ${start}; i ${end}; i${inc}) {
+                    cmd.run("${fn}", false);
+                }`)
+            }
+        })
+
 
         // cmd.registerEvent("newline", args => {
         //     if(cmd.lines.length === Math.floor(cmd.height / cmd.lineHeight)) {

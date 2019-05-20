@@ -179,8 +179,45 @@ class Vector {
     }
 }
 
+class ShapeEventListener {
+    constructor() {
+        this.events = {
+
+        };
+    }
+
+    register(type, fn) {
+        if(typeof type === "string" && typeof fn === "function") {
+            if(!this.exists(type)) {
+                this.events[type] = [];
+            }
+
+            this.events[type].push(fn);
+        }
+    }
+
+    trigger(type, params) {
+        if(this.exists(type)) {
+            this.events[type].forEach(event => {
+                if(params) {
+                    event(...params)
+                } else {
+                    event();
+                }
+            });
+        }
+    }
+
+    exists(type) {
+        return (type && this.events[type])
+    }
+}
+
 class Shape {
     constructor(x, y) {
+        this.$events = new ShapeEventListener();
+        this.$mouseover = false;
+        this.$mousedown = false;
         this.pos = new Vector(x, y);
 
         this.showFill = true;
@@ -262,6 +299,47 @@ class Shape {
     setAngle(n) {
         this.angle = n;
         return this;
+    }
+
+    contains() {
+        return false;
+    }
+
+    addEventListener(type, fn) {
+        this.$events.register(type, fn);
+    }
+
+    trigger(event, params) {
+        this.$events.trigger(event, params);
+    }
+
+    preRender(canv) {
+        if(canv.mouseDown && this.contains(canv.mouseX, canv.mouseY)) {
+            this.$mousedown = true;
+            this.trigger("mousedown", [canv]);
+        }
+
+        if(this.contains(canv.mouseX, canv.mouseY) && this.$mousedown === true && !canv.mouseDown) {
+            this.$mousedown = false;
+            this.trigger("mouseup", [canv]);
+            this.trigger("click", [canv]);
+        }
+
+        if(!this.contains(canv.mouseX, canv.mouseY)) {
+            this.$mousedown = false;
+        }
+
+        if(this.contains(canv.mouseX, canv.mouseY)) {
+            this.$mouseover = true;
+            this.trigger("mouseover", [canv]);
+        }
+
+        if(this.$mouseover === true && !this.contains(canv.mouseX, canv.mouseY)) {
+            this.$mouseover = false;
+            this.trigger("mouseout", [canv]);
+        }
+
+        
     }
 
     renderRotation(canv) {
@@ -445,6 +523,7 @@ class Pic extends Shape {
         if (!this.loaded) {
             setTimeout(() => this.render(canv), 0);
         } else {
+            this.preRender(canv);
             canv.ctx.save();
             canv.ctx.beginPath();
             this.renderRotation(canv);
@@ -468,6 +547,7 @@ class Point extends Shape {
     }
 
     render(canv) {
+        this.preRender(canv);
         canv.ctx.beginPath();
         canv.ctx.strokeStyle = this.color.toString();
         canv.ctx.strokeRect(this.x, this.y, 1, 1);
@@ -534,6 +614,7 @@ class Line extends Shape {
     }
 
     render(canv) {
+        this.preRender(canv);
         canv.ctx.beginPath();
         canv.ctx.lineWidth = this.strokeWidth;
         canv.ctx.strokeStyle = this.color.toString();
@@ -549,9 +630,34 @@ class Rect extends Shape {
         super(x, y);
         this.width = w;
         this.height = h;
+
+        this.str = false;
+    }
+
+    set text(n) {
+        if(!n) {
+            this.str = false;
+        } else {
+            if(this.str) {
+                this.str.string = n;
+            } else {
+                this.str = new Text(n);
+                this.str.textAlign = "center";
+            }
+        }
+    }
+
+    get text() {
+        return this.str?this.str.string:false;
+    }
+
+    renderText(canv) {
+        this.str.setPos(this.x + (this.width / 2), this.y + (this.height / 2));
+        this.str.render(canv);
     }
 
     render(canv) {
+        this.preRender(canv);
         canv.ctx.save();
         canv.ctx.beginPath();
         this.renderRotation(canv);
@@ -567,6 +673,9 @@ class Rect extends Shape {
         }
         canv.ctx.closePath();
         canv.ctx.restore();
+        if(this.str) {
+            this.renderText(canv);
+        }
     }
 
     contains(x, y) {
@@ -606,6 +715,7 @@ class Circle extends Shape {
     }
 
     render(canv) {
+        this.preRender(canv);
         if(this.size >= 0) {
             canv.ctx.beginPath();
             if (this.showStroke) {
@@ -647,6 +757,7 @@ class Triangle extends Shape {
     }
 
     render(canv) {
+        this.preRender(canv);
         canv.ctx.save();
         canv.ctx.beginPath();
         canv.ctx.moveTo(this.x1, this.y1);
@@ -750,6 +861,28 @@ class BarGraph extends ShapeGroup {
     }
 }
 
+class Grid extends ShapeGroup {
+    constructor(x, y, width, height, rows, cols) {
+        super([]);
+        this.cells = [];
+
+        const cw = width / cols;
+        const ch = height / rows;
+
+        for(let i = 0; i < cols; i++) {
+            for(let j = 0; j < rows; j++) {
+                const cx = x + (i * cw);
+                const cy = y + (j * ch);
+                const cell = new Rect(cx, cy, cw, ch);
+                cell.posx = i;
+                cell.posy = j;
+                this.cells.push(cell);
+            }
+        }
+        this.shapes = this.cells;
+    }
+}
+
 class Text extends Shape {
     constructor(string = "undefined", x = 0, y = 0, fontSize = 20) {
         super(x, y);
@@ -781,6 +914,7 @@ class Text extends Shape {
     }
 
     render(canv) {
+        this.preRender(canv);
         canv.ctx.beginPath();
         canv.ctx.textAlign = this.textAlign;
         canv.ctx.font = this.font;

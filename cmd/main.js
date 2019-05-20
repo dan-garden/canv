@@ -12,14 +12,19 @@ class Term extends Canv {
                 yellow: new Color(255, 255, 0),
                 red: new Color(255, 100, 100),
                 green: new Color(100, 255, 100),
-                blue: new Color(100, 100, 255)
+                blue: new Color(100, 100, 255),
+
+                link: new Color(255, 140, 0)
             },
             line: class {
-                constructor(text, color, bg) {
+                constructor(text, color, bg, link=false) {
                     this.text = text;
                     this.color = color;
-                    if(bg) {
+                    if (bg) {
                         this.background = bg;
+                    }
+                    if(link) {
+                        this.link = link;
                     }
                 }
             },
@@ -63,7 +68,7 @@ class Term extends Canv {
 
             bindPaste() {
                 window.addEventListener("paste", e => {
-                    if(this.visible()) {
+                    if (this.visible()) {
                         e.preventDefault();
                         const pasteData = e.clipboardData.getData("text");
                         if (this.cursorPos === false) {
@@ -83,7 +88,7 @@ class Term extends Canv {
 
             bindKeyDown() {
                 window.addEventListener("keydown", e => {
-                    if(this.visible()) {
+                    if (this.visible()) {
                         if ((e.ctrlKey || e.metaKey) && e.key === "v") {
                             // e.preventDefault();
                             return;
@@ -111,7 +116,7 @@ class Term extends Canv {
                             }
                             return;
                         }
-    
+
                         if (e.key === "ArrowUp") {
                             this.historyChange(-1);
                         } else if (e.key === "ArrowDown") {
@@ -139,7 +144,8 @@ class Term extends Canv {
                             if (this.lines[lastLineIndex].text.length >= maxWidth) {
                                 this.lines.push(new this.line(
                                     "",
-                                    this.colors.primary
+                                    this.colors.primary,
+                                    this.colors.secondary
                                 ));
                                 this.lines[lastLineIndex + 1].text += e.key;
                             } else {
@@ -157,17 +163,21 @@ class Term extends Canv {
             },
 
 
-            newLine(line, color) {
+            newLine(line, color, link=false) {
                 if (typeof line === "undefined") {
                     this.lines.push(new this.line(
                         this.prefix,
-                        this.colors.primary
+                        this.colors.primary,
+                        this.colors.secondary,
+                        link
                     ));
                 } else {
                     if (typeof line !== "object") {
                         line = new this.line(
                             line,
-                            this.colors.primary
+                            this.colors.primary,
+                            this.colors.secondary,
+                            link
                         );
                     }
 
@@ -177,19 +187,19 @@ class Term extends Canv {
 
                     this.lines.push(line);
                 }
-                
+
                 this.curHistoryIndex = this.history.length;
                 this.cursorPos = false;
                 this.triggerEvent("newline");
             },
 
-            log(result, color = this.colors.primary) {
-                const line = this.filterResult(result, color);
+            log(result, color = this.colors.primary, link=false) {
+                const line = this.filterResult(result, color, link);
                 this.newLine(line);
             },
 
             triggerEvent(type) {
-                if(Array.isArray(this.events[type])) {
+                if (Array.isArray(this.events[type])) {
                     this.events[type].forEach(handler => {
                         handler();
                     })
@@ -197,15 +207,15 @@ class Term extends Canv {
             },
 
             registerEvent(type, fn) {
-                if(!this.events[type]) {
+                if (!this.events[type]) {
                     this.events[type] = [];
                 }
 
                 this.events[type].push(fn);
             },
 
-            filterResult(text, color) {
-                let bg = undefined;
+            filterResult(text, color, link=false) {
+                let bg = this.colors.secondary;
                 if (typeof text === "number") {
                     color = this.colors.magenta;
                 } else if (typeof text === "boolean") {
@@ -224,12 +234,12 @@ class Term extends Canv {
                     //     this.lines.push({text: line, color}); 
                     // })
                     // return false;
-                } else if(typeof text === "function") {
-                    color = this.colors.yellow;  
+                } else if (typeof text === "function") {
+                    color = this.colors.yellow;
                 } else if (typeof text === "undefined") {
                     color = this.colors.grey;
                     return;
-                } else if(text instanceof Error) {
+                } else if (text instanceof Error) {
                     color = this.colors.red;
                 }
 
@@ -237,24 +247,25 @@ class Term extends Canv {
                 return new this.line(
                     text,
                     color,
-                    bg
+                    bg,
+                    link
                 );
             },
 
             getLastLine() {
-                return this.lines[this.lines.length-2];
+                return this.lines[this.lines.length - 2];
             },
 
             execute() {
                 const lastLine = this.getLastLine();
-                if(typeof lastLine.text === "function") {
+                if (typeof lastLine.text === "function") {
                     lastLine.text();
                 }
                 return lastLine.text;
             },
 
-            run(command, nl=true) {
-                if(nl) {
+            run(command, nl = true) {
+                if (nl) {
                     this.updateHistory(command);
                 }
                 command.split(" && ").forEach(c => {
@@ -263,18 +274,18 @@ class Term extends Canv {
                         this.newLine(line);
                     }
                 });
-                if(nl) {
+                if (nl) {
                     this.newLine();
                 }
             },
 
             process(command, nl) {
-                let line = new this.line("", this.colors.primary);
+                let line = new this.line("", this.colors.primary, this.colors.secondary);
 
                 try {
                     let commands = Object.keys(this.commands);
                     let isCommand = false;
-                    for(let i = 0; i < commands.length; i++) {
+                    for (let i = 0; i < commands.length; i++) {
                         const c = commands[i];
                         if (command === c || command.startsWith(c + " ")) {
                             isCommand = true;
@@ -283,7 +294,7 @@ class Term extends Canv {
                                 .trim()
                                 .split(' ');
                             params = this.filterParams(params);
-                                this.commands[c](params);
+                            this.commands[c](params);
                         }
                     };
 
@@ -310,15 +321,16 @@ class Term extends Canv {
 
             filterParams(params) {
                 return params.filter(p => p != "")
-                .map(param=>isNaN(param)?param:parseInt(param))
-                .join(' ')
-                .replace( /\{{.+?\}}/g, (match, offset, string) => {
-                    return eval(match);
-                }).split(' ');
+                    .join(' ')
+                    .replace(/\{{.+?\}}/g, (match, offset, string) => {
+                        return eval(match);
+                    }).split(' ').map(param => {
+                        return isNaN(param) ? param : parseInt(param)
+                    });
             },
 
             getParams() {
-                let line = this.lines[this.lines.length-1].text;
+                let line = this.lines[this.lines.length - 1].text;
                 let params = line.replace(this.prefix, "");
                 params = params.split(" ");
                 params.shift();
@@ -328,14 +340,14 @@ class Term extends Canv {
             },
 
             updateHistory(command) {
-                if(command!=="" && command != this.history[this.history.length-1]) {
+                if (command !== "" && command != this.history[this.history.length - 1]) {
                     this.history.push(command);
 
                     if (this.history.length >= this.maxHistory) {
                         this.history = this.history.slice(Math.max(this.history.length - this.maxHistory, 0))
                     }
-    
-    
+
+
                     localStorage.setItem("cli-history", JSON.stringify(this.history));
                 }
             },
@@ -375,20 +387,20 @@ class Term extends Canv {
                             });
                         }
 
-                        if(typeof callback === "function") {
+                        if (typeof callback === "function") {
                             callback();
                         }
                     });
             },
 
 
-            loadPlugins() {              
+            loadPlugins() {
                 fetch("./plugins.json")
                     .then(result => result.json())
                     .then(result => {
                         this.plugins = result;
                         let keys = Object.keys(this.plugins);
-                        if(keys.length === 0) {
+                        if (keys.length === 0) {
                             this.finishedLoading();
                             return;
                         }
@@ -398,7 +410,7 @@ class Term extends Canv {
                             this.loadPlugin(name, config, () => {
                                 loadedCount++;
 
-                                if(loadedCount === keys.length) {
+                                if (loadedCount === keys.length) {
                                     this.finishedLoading();
                                 }
                             });
@@ -434,7 +446,7 @@ class Term extends Canv {
             },
 
             draw() {
-                if(this.loaded) {
+                if (this.loaded) {
                     this.background = this.colors.secondary;
 
                     let lastLineWidth = 0;
@@ -444,9 +456,21 @@ class Term extends Canv {
                         text.fontFamily = this.fontFamily;
                         text.fontSize = this.fontSize;
 
-                        if(line.background) {
+                        if (line.background) {
                             const bg = new Rect(text.x, text.y + (this.lineHeight / 4), this.width, this.lineHeight);
                             bg.color = line.background;
+                            if(line.link) {
+                                const origColor = text.color;
+                                if(bg.contains(this.mouseX, this.mouseY)) {
+                                    text.color = this.colors.link;
+                                    if(this.mouseDown) {
+                                        window.open(line.link);
+                                    }
+                                } else {
+                                    text.color = origColor;
+                                }
+                            }
+                            
                             this.add(bg);
                         }
 

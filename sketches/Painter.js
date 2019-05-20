@@ -1,0 +1,5 @@
+new Canv('canvas', {
+    setup() {
+        
+    }
+})

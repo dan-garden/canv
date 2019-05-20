@@ -71,6 +71,7 @@ const space = new Canv('canvas', {
         this.speed = 5;
         this.starCount = 2;
         this.stars = new ShapeGroup();
+        this.sun = new Circle(0, 0, 0).setColor(new Color(255, 215, 0));
     },
     update() {
         this.time += this.speed;
@@ -81,25 +82,28 @@ const space = new Canv('canvas', {
         }
         this.stars.shrink(0.01);
         this.stars.forEach((s, i) => {if(s.size<0){this.stars.remove(i)}})
+
+        const r = this.width / this.zoom;
+        this.sun.setPos(this.pos.x, this.pos.y);
+        this.sun.radius = r;
     },
     draw() {
-        this.background = 0;
-        const r = this.width / this.zoom;
-        const sun = new Circle(this.pos.x,this.pos.y,r).setColor(new Color(255, 215, 0));
+        // this.background = 0;
+
         this.solarSystem = new ShapeGroup([this.stars, 
             ...Object.keys(this.planets).map(planet => {
                 planet = this.planets[planet];
                 const a = (planet.angle - (this.time * planet.speed));
                 return new ShapeGroup({
                     planet: new Circle(
-                        sun.x + ((r * planet.i) * Math.cos(a * Math.PI / 180)),
-                        sun.y + ((r * planet.i) * Math.sin(a * Math.PI / 180)),
-                        r / 140 * planet.radius).setColor(planet.color),
-                    orbit: new Circle(sun.x, sun.y, (r * planet.i))
+                        this.sun.x + ((this.sun.radius * planet.i) * Math.cos(a * Math.PI / 180)),
+                        this.sun.y + ((this.sun.radius * planet.i) * Math.sin(a * Math.PI / 180)),
+                        this.sun.radius / 140 * planet.radius).setColor(planet.color),
+                    orbit: new Circle(this.sun.x, this.sun.y, (this.sun.radius * planet.i))
                         .noFill()
                         .setStroke(50)
                 })
-            }), sun
+            }), this.sun
         ])
         this.add(this.solarSystem);
     }
