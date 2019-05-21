@@ -24,7 +24,7 @@ new Canv('canvas', {
                         cmd.fontSize
                     );
 
-                    lineNumber.color = new Color(cmd.colors.primary).shade(-100);
+                    lineNumber.color = new Color(cmd.colors.primary).shade(255);
                     lineNumber.textAlign = "right";
                     lineNumber.fontFamily = cmd.fontFamily;
 

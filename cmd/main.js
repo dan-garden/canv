@@ -3,7 +3,7 @@ class Term extends Canv {
         super('canvas', {
             colors: {
                 primary: new Color(255),
-                secondary: new Color(0),
+                secondary: new Color(0, 0, 0),
 
                 grey: new Color(150),
 
