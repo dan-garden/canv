@@ -1,15 +1,20 @@
 new Canv('canvas', {
     setup() {
+        this.src = false;
+        this.bg = false;
         cmd.registerCommand("bg", args => {
-            cmd.bg = false;
             if(args[0]) {
                 this.src = args.join(" ");
             }
         });
 
         cmd.registerFunction(() => {
-            if(!cmd.bg) {
-                cmd.add(new Pic(this.src, 0, 0, cmd.width, cmd.height))
+            if(this.src) {
+                this.bg = new Pic(this.src, 0, 0, cmd.width, cmd.height);
+                this.src = false;
+            }
+            if(this.bg) {
+                cmd.add(this.bg);
             }
         });
     }
