@@ -91,6 +91,11 @@ new Canv('canvas', {
             open() {
                 this.build();
                 this.dom.style.display = "block";
+                window.addEventListener("keyup", e => {
+                    if(e.key === "Escape") {
+                        this.close();
+                    }
+                });
                 cmd.overlays.push(this);
             }
         };

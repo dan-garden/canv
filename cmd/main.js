@@ -2,8 +2,8 @@ class Term extends Canv {
     constructor() {
         super('canvas', {
             colors: {
-                primary: new Color(255),
-                secondary: new Color(0, 0, 0),
+                primary: new Color(255, 255, 0),
+                secondary: new Color(18, 0, 36),
 
                 grey: new Color(150),
 
@@ -191,6 +191,7 @@ class Term extends Canv {
                 this.curHistoryIndex = this.history.length;
                 this.cursorPos = false;
                 this.triggerEvent("newline");
+                return line;
             },
 
             log(result, color = this.colors.primary, link=false) {
@@ -463,8 +464,17 @@ class Term extends Canv {
                                 const origColor = text.color;
                                 if(bg.contains(this.mouseX, this.mouseY)) {
                                     text.color = this.colors.link;
-                                    if(this.mouseDown) {
-                                        window.open(line.link);
+                                    if(this.mouseDown && !line.clicked) {
+                                        line.clicked = true;
+                                        if(typeof line.link === "string") {
+                                            window.open(line.link);
+                                        } else if(typeof line.link === "function") {
+                                            line.link(this);
+                                        }
+
+                                        setTimeout(() => {
+                                            line.clicked = false;
+                                        }, 400);
                                     }
                                 } else {
                                     text.color = origColor;
