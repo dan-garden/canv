@@ -177,6 +177,14 @@ class Vector {
             this.y += v.y;
         }
     }
+
+    moveX(n) {
+        this.x += n;
+    }
+
+    moveY(n) {
+        this.y += n;
+    }
 }
 
 class ShapeEventListener {
@@ -278,6 +286,11 @@ class Shape {
     setStroke(n) {
         this.stroke = new Color(n);
         this.showStroke = true;
+        return this;
+    }
+
+    setStrokeWidth(n) {
+        this.strokeWidth = n;
         return this;
     }
 
@@ -419,9 +432,9 @@ class ShapeGroup {
     }
 
     add(n) {
-        this.shapes.push(n);
+        this.shapes.unshift(n);
+        // this.shapes.push(n);
         return this;
-
     }
 
     clear() {
@@ -436,7 +449,9 @@ class ShapeGroup {
     }
 
     moveY(n) {
-        this.forEach(s => s.moveY(n))
+        this.forEach(s => {
+            s.moveY(n)
+        })
     }
 
     shrink(n) {
@@ -557,17 +572,27 @@ class Point extends Shape {
 
 class Line extends Shape {
     constructor(x1, y1, x2, y2) {
-        super(x1, y1);
+        super();
 
         if (x1 instanceof Vector && y1 instanceof Vector) {
-            this.x = x1.x;
-            this.y = x1.y;
-            this.x2 = y1.x;
-            this.y2 = y1.y;
+            this.pos = x1;
+            this.pos2 = y1;
         } else {
-            this.x2 = x2;
-            this.y2 = y2;
+            this.pos = new Vector(x1, y1);
+            this.pos2 = new Vector(x2, y2);
         }
+
+        this.lineCap = "round";
+    }
+
+    moveX(n) {
+        this.pos.moveX(n);
+        this.pos2.moveX(n);
+    }
+
+    moveY(n) {
+        this.pos.moveY(n);
+        this.pos2.moveY(n);
     }
 
     get x1() {
@@ -617,9 +642,10 @@ class Line extends Shape {
         this.preRender(canv);
         canv.ctx.beginPath();
         canv.ctx.lineWidth = this.strokeWidth;
+        canv.ctx.lineCap = this.lineCap;
         canv.ctx.strokeStyle = this.color.toString();
-        canv.ctx.moveTo(this.x, this.y);
-        canv.ctx.lineTo(this.x2, this.y2);
+        canv.ctx.moveTo(this.pos.x, this.pos.y);
+        canv.ctx.lineTo(this.pos2.x, this.pos2.y);
         canv.ctx.stroke();
         canv.ctx.closePath();
     }

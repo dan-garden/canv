@@ -1,0 +1,36 @@
+* {
+    box-sizing: border-box;
+}
+
+#frames-nav {
+    display: inline-block;
+    padding: 5px;
+    width: 100%;
+    overflow-x:auto;
+    overflow-y:hidden;
+    white-space:nowrap;
+    border-bottom: solid 1px black;
+    margin: 0;
+}
+
+#frames-nav li {
+    display: inline-block;
+    width: 75px;
+    height: 75px;
+    border: solid 1px black;
+}
+
+#options-nav {
+    display: inline-block;
+    vertical-align: top;
+    width: 200px;
+    min-height: 602px;
+    border: solid 1px black;
+    border-left: none;
+    margin-right: 25px;
+}
+
+#sandbox {
+    display: inline-block;
+    border: solid 1px black;
+}
