@@ -7,6 +7,10 @@ class Bee {
         this.every = every;
     }
 
+    calculateGenerated() {
+        return this.generates * this.owned;
+    }
+
     buy(honey) {
         if(honey >= this.price) {
             const newHoney = honey -= this.price;
@@ -20,11 +24,16 @@ class Bee {
     }
 
     increasePrice() {
-        this.price *= 1.8;
+        // this.price *= 1.2;
+        // this.price = Math.floor(this.price);
     }
 
     getShape(canv) {
-        const shape = new Circle(canv.randomWidth, canv.randomHeight, this.size);
+        const shape = new Circle(
+            Canv.random(canv.halfWidth() - 50, canv.halfWidth() + 50),
+            Canv.random(canv.halfHeight() - 50, canv.halfHeight() + 50),
+            this.size,
+        );
         return shape;
     }
 }
@@ -65,13 +74,13 @@ const bc = new Canv('canvas', {
                 .setColor(new Color(255)),
         });
 
-        this.honey = 20;
+        this.honey = 200000;
         this.flowerPower = 1;
         this.shop = {
             bees: {
-                worker: new Bee(1, 20, 1, 200),
-                honeybee: new Bee(2, 20, 2, 200),
-                drone: new Bee(1, 20, 2, 100),
+                worker: new Bee(1, 20, 1, 10),
+                honeybee: new Bee(1, 100, 2, 10),
+                drone: new Bee(2, 200, 2, 5),
 
             }
         }
@@ -81,15 +90,17 @@ const bc = new Canv('canvas', {
         this.honey += n;
     },
 
-    buy(type, name) {
+    buy(type, name, amount=1) {
         const item = this.shop[type][name];
-        const buy = item.buy(this.honey);
+        for(let i = 0; i < amount; i++) {
+            const buy = item.buy(this.honey);
 
-        if(buy!==false) {
-            this.honey = buy;
-            this.view.bees.add(item.getShape(this));
-        } else {
-            console.log("not enough honey");
+            if(buy!==false) {
+                this.honey = buy;
+                this.view.bees.add(item.getShape(this));
+            } else {
+                console.log("not enough honey");
+            }
         }
     },
 
@@ -109,7 +120,28 @@ const bc = new Canv('canvas', {
         this.view.honeyCount.string = this.honey;
 
         const owned = this.getOwned();
-        // console.log(owned);
+        owned.forEach(item => {
+            if(this.frames % item.every === 0) {
+                this.addHoney(item.calculateGenerated());
+            }
+        });
+
+        this.view.bees.forEach(bee => {
+            bee.moveX(Canv.random(-1, 1));
+            bee.moveY(Canv.random(-1, 1));
+            if(bee.x < this.halfWidth()-50) {
+                bee.x = this.halfWidth()-50;
+            }
+            if(bee.x > this.halfWidth()+50) {
+                bee.x = this.halfWidth()+50;
+            }
+            if(bee.y < this.halfHeight()-50) {
+                bee.y = this.halfHeight()-50;
+            }
+            if(bee.y > this.halfHeight()+50) {
+                bee.y = this.halfHeight()+50;
+            }
+        })
     },
 
     draw() {

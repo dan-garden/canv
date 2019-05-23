@@ -1,5 +1,16 @@
 new Canv('canvas', {
     setup() {
+        this.origLines = false;
+
+        cmd.registerCommand("filter", args => {
+            const filter = args.join(" ").toLowerCase();
+            this.origLines = JSON.parse(JSON.stringify(cmd.lines));
+            cmd.lines = cmd.lines.filter(line => {
+                const str = line.text.toLowerCase().replace(cmd.prefix, "");
+                return str.includes(filter);
+            });
+        })
+
         cmd.registerCommand("clear", args => {
             cmd.lines = [];
             cmd.triggerEvent("clear");
@@ -58,9 +69,15 @@ new Canv('canvas', {
                 const fn = args.join(" ");
 
                 eval(`for(let i = ${start}; i ${end}; i${inc}) {
+                    window.i = i;
                     cmd.run("${fn}", false);
-                }`)
+                }`);
+                delete window.i;
             }
+        })
+
+        cmd.registerCommand("goto", args => {
+            window.open("https://" + args.join(" "));
         })
 
 
