@@ -1239,6 +1239,10 @@ class Canv {
         this.filterPixels(color => {return color.invert()});
     }
 
+    toDataURL() {
+        return this.canvas.toDataURL(...arguments);
+    }
+
     getPixels(x=0, y=0, w=this.width, h=this.height) {
         const px = [];
         const data = this.ctx.getImageData(x, y, w, h).data;
