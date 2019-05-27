@@ -25,6 +25,7 @@ class PivotObj extends ShapeGroup {
         this.points = [];
         this.id = this.generateId();
         this.selected = false;
+        this.handles = true;
     }
 
     setPoints(points) {
@@ -57,51 +58,59 @@ class PivotObj extends ShapeGroup {
     }
 
     initHandles() {
-        this.points.forEach((handle, i) => {
-            let color;
-            if(this.selected) {
-                color = i === 0 ? "orange" : "red";
-            } else {
-                color = "blue";
-            }
-            const handleKnob = new Circle(handle.x, handle.y, 10).setColor(color);
-            this.add(handleKnob);
-            handleKnob.addEventListener("mousedown", () => {
+        if(this.handles) {
+            this.points.forEach((handle, i) => {
+                let color;
                 if(this.selected) {
-                    if(i === 0) {
-                        if(this.sandbox.mouseX > this.sandbox.mousePrevX) {
-                            this.points.moveX(1);
-                        } else if(this.sandbox.mouseX < this.sandbox.mousePrevX) {
-                            this.points.moveX(-1);
-                        }
-                        if(this.sandbox.mouseY > this.sandbox.mousePrevY) {
-                            this.points.moveY(1);
-                        } else if(this.sandbox.mouseY < this.sandbox.mousePrevY) {
-                            this.points.moveY(-1);
-                        }
-                    } else {
-                        handle.setPos(this.sandbox.mouseX, this.sandbox.mouseY);
-                        handleKnob.setPos(this.sandbox.mouseX, this.sandbox.mouseY);
-                    }
-                    this.init();
+                    color = i === 0 ? "orange" : "red";
                 } else {
-                    sandbox.deselectAll();
-                    this.select();
+                    color = "blue";
                 }
+                const handleKnob = new Circle(handle.x, handle.y, 10).setColor(color);
+                this.add(handleKnob);
+                handleKnob.addEventListener("mousedown", () => {
+                    if(this.selected) {
+                        if(i === 0) {
+                            if(this.sandbox.mouseX > this.sandbox.mousePrevX) {
+                                this.points.moveX(2);
+                            } else if(this.sandbox.mouseX < this.sandbox.mousePrevX) {
+                                this.points.moveX(-2);
+                            }
+                            if(this.sandbox.mouseY > this.sandbox.mousePrevY) {
+                                this.points.moveY(2);
+                            } else if(this.sandbox.mouseY < this.sandbox.mousePrevY) {
+                                this.points.moveY(-2);
+                            }
+                        } else {
+                            handle.setPos(this.sandbox.mouseX, this.sandbox.mouseY);
+                            handleKnob.setPos(this.sandbox.mouseX, this.sandbox.mouseY);
+                        }
+                        this.init();
+                    } else {
+                        sandbox.deselectAllObjects();
+                        this.select();
+                    }
+                })
             })
-        })
+        }
     }
 
     snapshot() {
-        if(Math.random() >= 0.5) {
-            this.sandbox.snapshot(this.sandbox.toDataURL());
-        }
+        this.sandbox.snapshot();
+    }
+
+    hideHandles() {
+        this.handles = false;
+    }
+
+    showHandles() {
+        this.handles = true;
     }
 
     init() {
         this.buildShape();
-        this.initHandles();
         this.snapshot();
+        this.initHandles();
     }
 
     clone() {
@@ -202,20 +211,24 @@ const sandbox = new Canv('#sandbox', {
     width: 500,
     height: 600,
     setup() {
-        this.$frames = [new Frame()];
-        this.$frameIndex = 0;
-        this.$objId = false;
-
+        this.$frames = [];
         this.framesDom = document.querySelector('#frames-nav');
 
-        this.startDefaults();
+        this.init();
     },
 
-    startDefaults() {
+    init() {
+        this.$frameIndex = 0;
+        this.$objId = false;
+        this.$playingPreview = 0;
+
+
+        this.addFrame();
         this.addObj(new StickMan(this));
     },
 
-    snapshot(thumbnail) {
+    snapshot() {
+        const thumbnail = this.toDataURL();
         this.currentFrame().thumbnail = thumbnail;
     },
 
@@ -224,22 +237,47 @@ const sandbox = new Canv('#sandbox', {
     },
 
     addFrame() {
-        const newFrame = this.currentFrame().clone();
-        this.$frames.push(newFrame);
+        let newFrame;
+        if(this.$frames.length === 0) {
+            newFrame = new Frame();
+            this.$frames.push(newFrame);
+        } else {
+            newFrame = this.currentFrame().clone();
+            this.$frames.push(newFrame);
+        }
 
+        this.addFrameLi(this.$frames.length-1);
         this.changeFrame(this.$frames.length-1);
+        this.snapshot();
+
         return newFrame;
+    },
+
+    addFrameLi(n) {
+        const li = document.createElement("li");
+        li.id = "frame-" + n;
+        const img = document.createElement("img");
+        li.appendChild(img);
+        li.classList.add("active");
+
+        li.onclick = () => {
+            this.changeFrame(n);
+        };
+        this.framesDom.append(li);
     },
 
     changeFrame(n) {
         if(this.$frames[n] && n !== this.$frameIndex) {
-            this.deselectAll();
+            this.deselectAllObjects();
             this.$frameIndex = n;
             this.$objId = false;
+
+            Array.from(this.framesDom.querySelectorAll("li")).forEach(li => li.classList.remove("active"));
+            this.framesDom.querySelector("#frame-" + this.$frameIndex).classList.add("active");
         }
     },
 
-    deselectAll() {
+    deselectAllObjects() {
         this.$frames.forEach(frame => {
             frame.forEach(obj => {
                 obj.deselect();
@@ -248,7 +286,7 @@ const sandbox = new Canv('#sandbox', {
     },
 
     selectObj(n) {
-        this.deselectAll();
+        this.deselectAllObjects();
         this.$objId = n;
         this.currentFrame().forEach(obj => { 
             if(obj.id === n) {
@@ -265,24 +303,42 @@ const sandbox = new Canv('#sandbox', {
         this.currentFrame().add(obj);
     },
 
-    update() {
-        if(this.frames % 100 === 0) {
-            this.framesDom.innerHTML = "";
-            this.$frames.forEach((frame) => {
-                const li = document.createElement('li');
+    updateThumbnails() {
+        if(this.frames === 2 || this.frames % 30 === 0) {
+            this.$frames.forEach((frame, i) => {
+                const img = document.querySelector("#frame-"+i + " img");
                 if(frame.thumbnail) {
-                    const thumb = document.createElement('img');
-                    thumb.src = frame.thumbnail;
-                    li.appendChild(thumb);
+                    img.src = frame.thumbnail;
                 }
-                this.framesDom.appendChild(li);
             })
+        }
+    },
+
+    playPreview(interval = 100) {
+        this.$preFrameIndex = this.$frameIndex;
+        this.$frameIndex = 0;
+        this.$playingPreview = interval;
+    },
+
+    stopPreview() {
+        this.$playingPreview = 0;
+        this.$frameIndex = this.$preFrameIndex;
+    },
+
+    update() {
+        this.updateThumbnails();
+
+        if(this.$playingPreview & this.frames % this.$playingPreview === 0) {
+            this.$frameIndex = (this.$frameIndex + 1) % this.$frames.length;
         }
     },
 
     draw() {
         this.clear();
         this.add(this.currentFrame());
+        if(this.frames === 1) {
+            this.snapshot();
+        }
     }
 
 })

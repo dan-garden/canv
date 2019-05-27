@@ -19,6 +19,11 @@
     height: 75px;
     border: solid 1px black;
     vertical-align: top;
+    margin-right: 2px;
+}
+
+#frames-nav li.active {
+    border: solid 2px blue;
 }
 
 #frames-nav li img{
