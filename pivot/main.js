@@ -60,13 +60,9 @@ class PivotObj extends ShapeGroup {
     initHandles() {
         if(this.handles) {
             this.points.forEach((handle, i) => {
-                let color;
-                if(this.selected) {
-                    color = i === 0 ? "orange" : "red";
-                } else {
-                    color = "blue";
-                }
-                const handleKnob = new Circle(handle.x, handle.y, 10).setColor(color);
+                const handleKnob = new Circle(handle.x, handle.y, 10);
+                handleKnob.showFill = false;
+                handleKnob.showStroke = false;
                 this.add(handleKnob);
                 handleKnob.addEventListener("mousedown", () => {
                     if(this.selected) {
@@ -86,11 +82,15 @@ class PivotObj extends ShapeGroup {
                             handleKnob.setPos(this.sandbox.mouseX, this.sandbox.mouseY);
                         }
                         this.init();
+
+                        if(this.sandbox.autoFrames && this.sandbox.frames % 10 === 0) {
+                            this.sandbox.addFrame();
+                        }
                     } else {
                         sandbox.deselectAllObjects();
                         this.select();
                     }
-                })
+                });
             })
         }
     }
@@ -177,17 +177,14 @@ class StickMan extends PivotObj {
     }
 }
 
-
-class Dog extends PivotObj {
+class Ball extends PivotObj {
     constructor(sandbox) {
-        super(sandbox);
+        super(sandbox, "Ball");
 
-        this.thickness = 5;
+        this.size = 20;
+
         this.setPoints([
-            new Vector(this.x, this.y),
-
-            new Vector(this.x - 30, this.y + 30),
-            new Vector(this.x - 130, this.y + 30)
+            new Vector(this.x, this.y)
         ]);
 
         this.init();
@@ -195,21 +192,14 @@ class Dog extends PivotObj {
 
     buildShape() {
         this.setShapes({
-            head: new Circle(this.points[0].x+10+this.thickness, this.points[0].y-10-this.thickness, 20)
-                .noFill()
-                .setStrokeWidth(this.thickness),
-            neck: new Line(this.points[0], this.points[1])
-            .setStrokeWidth(this.thickness),
-            body: new Line(this.points[1], this.points[2])
-                .setStrokeWidth(this.thickness)
+            ball: new Circle(this.points[0].x, this.points[0].y, this.size)
         })
     }
 }
 
-
 const sandbox = new Canv('#sandbox', {
-    width: 500,
-    height: 600,
+    width: 300,
+    height: 400,
     setup() {
         this.$frames = [];
         this.framesDom = document.querySelector('#frames-nav');
@@ -221,10 +211,10 @@ const sandbox = new Canv('#sandbox', {
         this.$frameIndex = 0;
         this.$objId = false;
         this.$playingPreview = 0;
-
+        this.autoFrames = true;
 
         this.addFrame();
-        this.addObj(new StickMan(this));
+        this.addObj("StickMan");
     },
 
     snapshot() {
@@ -234,6 +224,11 @@ const sandbox = new Canv('#sandbox', {
 
     currentFrame() {
         return this.$frames[this.$frameIndex];
+    },
+
+    toggleAutoFrames() {
+        this.autoFrames = this.autoFrames ? false : true;
+        document.querySelector("#auto-frames-display").innerText = this.autoFrames ? "On" : "Off";
     },
 
     addFrame() {
@@ -299,7 +294,8 @@ const sandbox = new Canv('#sandbox', {
         return this.currentFrame().shapes[this.$objIndex];
     },
 
-    addObj(obj) {
+    addObj(objName) {
+        const obj = eval("new " + (objName || "PivotObj") + "(this)");
         this.currentFrame().add(obj);
     },
 
@@ -314,7 +310,7 @@ const sandbox = new Canv('#sandbox', {
         }
     },
 
-    playPreview(interval = 100) {
+    playPreview(interval = 3) {
         this.$preFrameIndex = this.$frameIndex;
         this.$frameIndex = 0;
         this.$playingPreview = interval;

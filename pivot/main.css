@@ -1,12 +1,14 @@
 * {
     box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
 #frames-nav {
     display: inline-block;
     padding: 5px;
     width: 100%;
-    overflow-x:auto;
+    overflow-x:scroll;
     overflow-y:hidden;
     white-space:nowrap;
     border-bottom: solid 1px black;
@@ -18,6 +20,7 @@
     width: 75px;
     height: 75px;
     border: solid 1px black;
+    text-align: center;
     vertical-align: top;
     margin-right: 2px;
 }
@@ -35,10 +38,19 @@
     display: inline-block;
     vertical-align: top;
     width: 200px;
-    min-height: 602px;
+    min-height: 402px;
     border: solid 1px black;
     border-left: none;
     margin-right: 25px;
+    text-align: center;
+    padding: 15px;
+}
+
+#options-nav button {
+    border: solid 1px black;
+    border-radius: 5px;
+    padding: 10px;
+
 }
 
 #sandbox {
