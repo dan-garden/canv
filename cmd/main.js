@@ -236,7 +236,7 @@ class Term extends Canv {
                     // })
                     // return false;
                 } else if (typeof text === "function") {
-                    color = this.colors.yellow;
+                    color = this.colors.orange;
                 } else if (typeof text === "undefined") {
                     color = this.colors.grey;
                     return;

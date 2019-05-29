@@ -33,7 +33,7 @@ new Canv('canvas', {
 
                 cmd.view.shapes[0] = lineNumbers;
             } else {
-                delete cmd.view.shapes[0];
+                cmd.view.shapes.splice(0, 1);
             }
         });
 

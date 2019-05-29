@@ -92,6 +92,17 @@ new Canv('canvas', {
             });
         });
 
+        cmd.registerCommand("download", args => {
+            const location = args.shift();
+            fetch(location)
+                .then(result => result.text())
+                .then(result => {
+                    const split = location.split("/");
+                    const filename = split[split.length-1];
+                    this.newFile(filename, result);
+                })
+        })
+
         cmd.registerCommand("exec", args => {
             const filename = args.shift();
             const found = this.open(filename);
@@ -123,6 +134,9 @@ new Canv('canvas', {
     },
 
     newFile(name, content) {
+        if(this.exists(name)) {
+            throw new Error("File already exists.");
+        }
         this.getCurrent().push({
             name,
             type: "file",
@@ -132,12 +146,20 @@ new Canv('canvas', {
     },
 
     newDir(name) {
+        if(this.exists(name)) {
+            throw new Error("Directory already exists.");
+        }
         this.getCurrent().push({
             name,
             type: "dir",
             content: []
         });
         this.updateStructure();
+    },
+
+    exists(name) {
+        const open = this.getCurrent().filter(f => f.name === name);
+        return open.length > 0;
     },
 
     edit(filename, content) {
