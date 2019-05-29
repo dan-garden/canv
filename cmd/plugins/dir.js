@@ -162,17 +162,32 @@ new Canv('canvas', {
 
     open(filename) {
         if(filename) {
-            const cur = this.getCurrent();        
-            const search = cur.filter(file => {
-                return file.name === filename;
-            });
+            const paths = filename.split("/");
+            const curPath = this.path;
+            if(paths.length > 1) {
+                for(let i = 0; i < paths.length-1; i++) {
+                    const change = this.changeDirectory(paths[i]);
+                    if(!change) {
+                        this.path = curPath;
+                        throw new Error('File not found');
+                    }
+                }
+            }
 
+            const cur = this.getCurrent();
+            this.path = curPath;
+            
+            const search = cur.filter(file => {
+                return file.name === paths[paths.length-1];
+            });
+            
             
             if(search && search[0]) {
                 return search[0].type === "file" ? search[0] : undefined;
             } else {
                 throw new Error('File not found')
             }
+
         }
     },
 
