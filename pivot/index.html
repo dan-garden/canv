@@ -19,7 +19,12 @@
         <button onclick="sandbox.stopPreview()">Stop</button>
         <br /><br />
         <button onclick="sandbox.toggleAutoFrames()">Toggle Auto Frames</button>
-        <div id="auto-frames-display">On</div>
+        <div id="auto-frames-display">Off</div>
+        <br /><br />
+        <select id="objects-list"></select>
+        <button onclick="sandbox.addObject(document.querySelector('#objects-list').value);">
+            Add
+        </button>
         
     </div>
     <canvas id="sandbox"></canvas>

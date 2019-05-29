@@ -197,12 +197,21 @@ class Ball extends PivotObj {
     }
 }
 
+
+
 const sandbox = new Canv('#sandbox', {
     width: 300,
     height: 400,
     setup() {
+        this.dom = {
+            frames: document.querySelector("#frames-nav"),
+            objs: document.querySelector("#objects-list")
+        };
+
+        this.$objectTypes = ["StickMan", "Ball"];
         this.$frames = [];
-        this.framesDom = document.querySelector('#frames-nav');
+
+
 
         this.init();
     },
@@ -211,10 +220,12 @@ const sandbox = new Canv('#sandbox', {
         this.$frameIndex = 0;
         this.$objId = false;
         this.$playingPreview = 0;
-        this.autoFrames = true;
+        this.autoFrames = false;
+
+        this.updateObjectTypes();
 
         this.addFrame();
-        this.addObj("StickMan");
+        this.addObject("StickMan");
     },
 
     snapshot() {
@@ -258,7 +269,7 @@ const sandbox = new Canv('#sandbox', {
         li.onclick = () => {
             this.changeFrame(n);
         };
-        this.framesDom.append(li);
+        this.dom.frames.append(li);
     },
 
     changeFrame(n) {
@@ -267,8 +278,8 @@ const sandbox = new Canv('#sandbox', {
             this.$frameIndex = n;
             this.$objId = false;
 
-            Array.from(this.framesDom.querySelectorAll("li")).forEach(li => li.classList.remove("active"));
-            this.framesDom.querySelector("#frame-" + this.$frameIndex).classList.add("active");
+            Array.from(this.dom.frames.querySelectorAll("li")).forEach(li => li.classList.remove("active"));
+            this.dom.frames.querySelector("#frame-" + this.$frameIndex).classList.add("active");
         }
     },
 
@@ -280,7 +291,7 @@ const sandbox = new Canv('#sandbox', {
         })
     },
 
-    selectObj(n) {
+    selectObject(n) {
         this.deselectAllObjects();
         this.$objId = n;
         this.currentFrame().forEach(obj => { 
@@ -294,9 +305,19 @@ const sandbox = new Canv('#sandbox', {
         return this.currentFrame().shapes[this.$objIndex];
     },
 
-    addObj(objName) {
+    addObject(objName) {
         const obj = eval("new " + (objName || "PivotObj") + "(this)");
         this.currentFrame().add(obj);
+    },
+
+    updateObjectTypes() {
+        this.dom.objs.innerHTML = "";
+        this.$objectTypes.forEach(objType => {
+            const option = document.createElement("option");
+            option.innerText = objType;
+            option.value = objType;
+            this.dom.objs.appendChild(option);
+        });
     },
 
     updateThumbnails() {
@@ -306,7 +327,7 @@ const sandbox = new Canv('#sandbox', {
                 if(frame.thumbnail) {
                     img.src = frame.thumbnail;
                 }
-            })
+            });
         }
     },
 
@@ -336,5 +357,4 @@ const sandbox = new Canv('#sandbox', {
             this.snapshot();
         }
     }
-
-})
+});
