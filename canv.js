@@ -165,6 +165,18 @@ class Vector {
         this.y = y;
     }
 
+    static getLine(a, b, count) {
+        count = count+1;
+        const d = Math.sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y)) / count;
+        const fi = Math.atan2(b.y - a.y, b.x - a.x);
+        
+        const points = [];
+        for (let i = 0; i <= count; ++i) {
+            points.push(new Vector(a.x + i * d * Math.cos(fi), a.y + i * d * Math.sin(fi)));
+        }
+        return points;
+    }
+
     setPos(x, y) {
         this.x = x;
         this.y = y;
@@ -175,6 +187,13 @@ class Vector {
         if(v instanceof Vector) {
             this.x += v.x;
             this.y += v.y;
+        }
+    }
+
+    subtract(v) {
+        if(v instanceof Vector) {
+            this.x -= v.x;
+            this.y -= v.y;
         }
     }
 
@@ -237,6 +256,8 @@ class Shape {
         this.stroke = new Color(0);
         this.dash = [];
         this.strokeWidth = 1;
+
+        this.shown = true;
     }
 
     set x(n) {
@@ -258,6 +279,16 @@ class Shape {
     noStroke() {
         this.showFill = true;
         this.showStroke = false;
+        return this;
+    }
+
+    hide() {
+        this.shown = false;
+        return this;
+    }
+
+    show() {
+        this.shown = true;
         return this;
     }
 
@@ -283,8 +314,11 @@ class Shape {
         return this;
     }
 
-    setStroke(n) {
+    setStroke(n, s) {
         this.stroke = new Color(n);
+        if(s) {
+            this.setStrokeWidth(s);
+        }
         this.showStroke = true;
         return this;
     }
@@ -327,6 +361,10 @@ class Shape {
     }
 
     preRender(canv) {
+        if(!this.shown) {
+            return false;
+        }
+
         if(canv.mouseDown && this.contains(canv.mouseX, canv.mouseY)) {
             this.$mousedown = true;
             this.trigger("mousedown", [canv]);
@@ -352,7 +390,7 @@ class Shape {
             this.trigger("mouseout", [canv]);
         }
 
-        
+        return true;
     }
 
     renderRotation(canv) {
@@ -376,10 +414,6 @@ class ShapeGroup {
             this[shapeKey] = shapes[shapeKey];
         })
         this.shapes = Object.values(shapes);
-    }
-
-    set color(x) {
-        this.forEach(shape => shape.color = x);
     }
 
     setColor(x) {
@@ -408,6 +442,27 @@ class ShapeGroup {
         if(typeof fn === "function") {
             for(let i = this.length-1; i >= 0; --i) {
                 fn(this.shapes[i], i);
+            }
+        }
+        return this;
+    }
+
+    map(fn) {
+        if(typeof fn === "function") {
+            for(let i = this.length-1; i >= 0; --i) {
+                this.shapes[i] = fn(this.shapes[i], i);
+            }
+        }
+        return this;
+    }
+
+    filter(fn) {
+        if(typeof fn === "function") {
+            for(let i = this.length-1; i >= 0; --i) {
+                let f = fn(this.shapes[i], i);
+                if(!f) {
+                    this.remove(i);                           
+                }
             }
         }
         return this;
@@ -454,15 +509,15 @@ class ShapeGroup {
         })
     }
 
-    shrink(n) {
+    shrink(n=1) {
         this.forEach(s => s.size -= n)
     }
 
-    grow(n) {
+    grow(n=1) {
         this.forEach(s => s.size += n)
     }
 
-    rotate(n) {
+    rotate(n=1) {
         this.forEach(shape => shape.angle += n);
         return this;
     }
@@ -506,6 +561,10 @@ class Pic extends Shape {
         this.image.src = n;
     }
 
+    get src() {
+        return this.image.src;
+    }
+
 
     getPixels(x=0, y=0, w=this.width, h=this.height) {
         const px = [];
@@ -538,21 +597,44 @@ class Pic extends Shape {
         if (!this.loaded) {
             setTimeout(() => this.render(canv), 0);
         } else {
-            this.preRender(canv);
-            canv.ctx.save();
-            canv.ctx.beginPath();
-            this.renderRotation(canv);
-            if (this.showStroke) {
-                canv.ctx.lineWidth = this.strokeWidth;
-                canv.ctx.strokeStyle = this.stroke.toString();
-                canv.ctx.strokeRect(this.x, this.y, this.width, this.height);
+            if(this.preRender(canv)) {
+                canv.ctx.save();
+                canv.ctx.beginPath();
+                this.renderRotation(canv);
+                if (this.showStroke) {
+                    canv.ctx.lineWidth = this.strokeWidth;
+                    canv.ctx.strokeStyle = this.stroke.toString();
+                    canv.ctx.strokeRect(this.x, this.y, this.width, this.height);
+                }
+                if (this.showFill) {
+                    canv.ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
+                }
+                canv.ctx.closePath();
+                canv.ctx.restore();
             }
-            if (this.showFill) {
-                canv.ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
-            }
-            canv.ctx.closePath();
-            canv.ctx.restore();
         }
+    }
+}
+
+class Sprite extends ShapeGroup {
+    constructor() {super(...arguments)}
+    getString(width=100, height=100) {
+        const canv = document.createElement("canvas");
+        const id = "sprite-" + Canv.random(10000, 99999);
+        canv.id = id;
+        document.body.append(canv);
+        const c = new Canv("#"+id, {
+            width,
+            height,
+            fullscreen: false,
+            createSprite(spr) {
+                this.add(spr);
+                return this.snapshot();
+            }
+        });
+        let sprite = c.createSprite(this);
+        document.body.removeChild(canv);
+        return sprite;
     }
 }
 
@@ -562,11 +644,12 @@ class Point extends Shape {
     }
 
     render(canv) {
-        this.preRender(canv);
-        canv.ctx.beginPath();
-        canv.ctx.strokeStyle = this.color.toString();
-        canv.ctx.strokeRect(this.x, this.y, 1, 1);
-        canv.ctx.closePath();
+        if(this.preRender(canv)) {
+            canv.ctx.beginPath();
+            canv.ctx.strokeStyle = this.color.toString();
+            canv.ctx.strokeRect(this.x, this.y, 1, 1);
+            canv.ctx.closePath();
+        }
     }
 }
 
@@ -639,15 +722,16 @@ class Line extends Shape {
     }
 
     render(canv) {
-        this.preRender(canv);
-        canv.ctx.beginPath();
-        canv.ctx.lineWidth = this.strokeWidth;
-        canv.ctx.lineCap = this.lineCap;
-        canv.ctx.strokeStyle = this.color.toString();
-        canv.ctx.moveTo(this.pos.x, this.pos.y);
-        canv.ctx.lineTo(this.pos2.x, this.pos2.y);
-        canv.ctx.stroke();
-        canv.ctx.closePath();
+        if(this.preRender(canv)) {
+            canv.ctx.beginPath();
+            canv.ctx.lineWidth = this.strokeWidth;
+            canv.ctx.lineCap = this.lineCap;
+            canv.ctx.strokeStyle = this.color.toString();
+            canv.ctx.moveTo(this.pos.x, this.pos.y);
+            canv.ctx.lineTo(this.pos2.x, this.pos2.y);
+            canv.ctx.stroke();
+            canv.ctx.closePath();
+        }
     }
 }
 
@@ -683,24 +767,25 @@ class Rect extends Shape {
     }
 
     render(canv) {
-        this.preRender(canv);
-        canv.ctx.save();
-        canv.ctx.beginPath();
-        this.renderRotation(canv);
-        if (this.showStroke) {
-            canv.ctx.lineWidth = this.strokeWidth;
-            canv.ctx.strokeStyle = this.stroke.toString();
-            canv.ctx.strokeRect(this.x, this.y, this.width, this.height);
-        }
-
-        if (this.showFill) {
-            canv.ctx.fillStyle = this.color.toString();
-            canv.ctx.fillRect(this.x, this.y, this.width, this.height);
-        }
-        canv.ctx.closePath();
-        canv.ctx.restore();
-        if(this.str) {
-            this.renderText(canv);
+        if(this.preRender(canv)) {
+            canv.ctx.save();
+            canv.ctx.beginPath();
+            this.renderRotation(canv);
+            if (this.showStroke) {
+                canv.ctx.lineWidth = this.strokeWidth;
+                canv.ctx.strokeStyle = this.stroke.toString();
+                canv.ctx.strokeRect(this.x, this.y, this.width, this.height);
+            }
+    
+            if (this.showFill) {
+                canv.ctx.fillStyle = this.color.toString();
+                canv.ctx.fillRect(this.x, this.y, this.width, this.height);
+            }
+            canv.ctx.closePath();
+            canv.ctx.restore();
+            if(this.str) {
+                this.renderText(canv);
+            }
         }
     }
 
@@ -741,23 +826,24 @@ class Circle extends Shape {
     }
 
     render(canv) {
-        this.preRender(canv);
-        if(this.size >= 0) {
-            canv.ctx.beginPath();
-            if (this.showStroke) {
-                canv.ctx.lineWidth = this.strokeWidth;
-                canv.ctx.strokeStyle = this.stroke.toString();
-                canv.ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
-                canv.ctx.stroke();
+        if(this.preRender(canv)) {
+            if(this.size >= 0) {
+                canv.ctx.beginPath();
+                if (this.showStroke) {
+                    canv.ctx.lineWidth = this.strokeWidth;
+                    canv.ctx.strokeStyle = this.stroke.toString();
+                    canv.ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
+                    canv.ctx.stroke();
+                }
+    
+                if (this.showFill) {
+                    canv.ctx.fillStyle = this.color.toString();
+                    canv.ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
+                    canv.ctx.fill();
+                }
+                canv.ctx.closePath();
             }
-
-            if (this.showFill) {
-                canv.ctx.fillStyle = this.color.toString();
-                canv.ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
-                canv.ctx.fill();
-            }
-            canv.ctx.closePath();
-        }
+        }        
     }
 }
 
@@ -783,28 +869,29 @@ class Triangle extends Shape {
     }
 
     render(canv) {
-        this.preRender(canv);
-        canv.ctx.save();
-        canv.ctx.beginPath();
-        canv.ctx.moveTo(this.x1, this.y1);
-        canv.ctx.lineTo(this.x2, this.y2);
-        canv.ctx.lineTo(this.x3, this.y3);
-        if (this.showStroke) {
-            canv.ctx.lineWidth = this.strokeWidth;
-            if (this.dash.length > 0) {
-                canv.ctx.setLineDash(this.dash);
+        if(this.preRender(canv)) {
+            canv.ctx.save();
+            canv.ctx.beginPath();
+            canv.ctx.moveTo(this.x1, this.y1);
+            canv.ctx.lineTo(this.x2, this.y2);
+            canv.ctx.lineTo(this.x3, this.y3);
+            if (this.showStroke) {
+                canv.ctx.lineWidth = this.strokeWidth;
+                if (this.dash.length > 0) {
+                    canv.ctx.setLineDash(this.dash);
+                }
+                canv.ctx.strokeStyle = this.stroke.toString();
+                canv.ctx.lineTo(this.x1, this.y1);
+                canv.ctx.stroke();
             }
-            canv.ctx.strokeStyle = this.stroke.toString();
-            canv.ctx.lineTo(this.x1, this.y1);
-            canv.ctx.stroke();
+    
+            if (this.showFill) {
+                canv.ctx.fillStyle = this.color.toString();
+                canv.ctx.fill();
+            }
+            canv.ctx.closePath();
+            canv.ctx.restore();
         }
-
-        if (this.showFill) {
-            canv.ctx.fillStyle = this.color.toString();
-            canv.ctx.fill();
-        }
-        canv.ctx.closePath();
-        canv.ctx.restore();
     }
 }
 
@@ -878,7 +965,7 @@ class BarGraph extends ShapeGroup {
             let c = field.color;
             const s = this.shadow;
             const bar = new ShapeGroup({
-                shadow: new Rect(x + s, y - s, w, h + s).setColor(c.shade(-100)),
+                shadow: new Rect(x + s, y - s, w, h + s).setColor(new Color(c).shade(-100)),
                 bar: new Rect(x, y, w, h).setColor(c),
                 text: field.label ? new Text(field.label, x, y - 2 - s).setSize(12).setFont("Verdana") : new Rect(-100, -100, 0, 0),
             });
@@ -894,6 +981,8 @@ class Grid extends ShapeGroup {
 
         const cw = width / cols;
         const ch = height / rows;
+        const white = new Color(255);
+        const black = new Color(0);
 
         for(let i = 0; i < cols; i++) {
             for(let j = 0; j < rows; j++) {
@@ -902,6 +991,8 @@ class Grid extends ShapeGroup {
                 const cell = new Rect(cx, cy, cw, ch);
                 cell.posx = i;
                 cell.posy = j;
+                cell.color = white;
+                cell.setStroke(1, black);
                 this.cells.push(cell);
             }
         }
@@ -917,7 +1008,7 @@ class Text extends Shape {
 
         this.textAlign = "left";
         this.fontSize = fontSize;
-        this.fontFamily = "Comic Sans MS";
+        this.fontFamily = "Arial";
     }
 
     get font() {
@@ -940,23 +1031,24 @@ class Text extends Shape {
     }
 
     render(canv) {
-        this.preRender(canv);
-        canv.ctx.beginPath();
-        canv.ctx.textAlign = this.textAlign;
-        canv.ctx.font = this.font;
-        this.renderRotation(canv);
-        if (this.showStroke) {
-            canv.ctx.lineWidth = this.strokeWidth;
-            canv.ctx.strokeStyle = this.stroke.toString();
-            canv.ctx.strokeText(this.string, this.x, this.fontSize + this.y);
+        if(this.preRender(canv)) {
+            canv.ctx.beginPath();
+            canv.ctx.textAlign = this.textAlign;
+            canv.ctx.font = this.font;
+            this.renderRotation(canv);
+            if (this.showStroke) {
+                canv.ctx.lineWidth = this.strokeWidth;
+                canv.ctx.strokeStyle = this.stroke.toString();
+                canv.ctx.strokeText(this.string, this.x, this.fontSize + this.y);
+            }
+    
+            if (this.showFill) {
+                canv.ctx.fillStyle = this.color.toString();
+                this.width = canv.ctx.measureText(this.string).width;
+                canv.ctx.fillText(this.string, this.x, this.fontSize + this.y);
+            }
+            canv.ctx.closePath();
         }
-
-        if (this.showFill) {
-            canv.ctx.fillStyle = this.color.toString();
-            this.width = canv.ctx.measureText(this.string).width;
-            canv.ctx.fillText(this.string, this.x, this.fontSize + this.y);
-        }
-        canv.ctx.closePath();
     }
 }
 
@@ -1082,7 +1174,7 @@ class Canv {
         }
 
         this.binds();
-        this.start();
+        this.start(true);
 
         if (noSelector) {
             return this.canvas;
@@ -1136,14 +1228,16 @@ class Canv {
     }
 
     resize() {
-        this.width = document.body.clientWidth;
-        this.height = document.body.clientHeight - 3;
+        if(this.fullscreen) {
+            this.width = document.body.clientWidth;
+            this.height = document.body.clientHeight - 5;
+        }
     }
 
-    start() {
+    start(runSetup=false) {
         if (!this.$running) {
             this.$running = true;
-            if (this.$setup) this.$setup();
+            if (this.$setup && runSetup) this.$setup();
             if (this.$update || this.$draw) requestAnimationFrame(this.loop.bind(this));
         }
         return this;
@@ -1241,6 +1335,10 @@ class Canv {
 
     toDataURL() {
         return this.canvas.toDataURL(...arguments);
+    }
+
+    snapshot() {
+        return this.toDataURL(...arguments);
     }
 
     getPixels(x=0, y=0, w=this.width, h=this.height) {
