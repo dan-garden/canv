@@ -1059,6 +1059,14 @@ class Text extends Shape {
         return this;
     }
 
+    get size() {
+        return this.fontSize;
+    }
+
+    set size(n) {
+        this.fontSize = n;
+    }
+
     render(canv) {
         if(this.preRender(canv)) {
             canv.ctx.beginPath();
