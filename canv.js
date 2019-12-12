@@ -979,8 +979,10 @@ class Grid extends ShapeGroup {
         super([]);
         this.cells = [];
 
-        const cw = width / cols;
-        const ch = height / rows;
+        this.rows = rows;
+        this.cols = cols;
+        const cw = width / this.cols;
+        const ch = height / this.rows;
         const white = new Color(255);
         const black = new Color(0);
 
@@ -992,6 +994,33 @@ class Grid extends ShapeGroup {
                 cell.posx = i;
                 cell.posy = j;
                 cell.color = white;
+                cell.setStroke(1, black);
+                this.cells.push(cell);
+            }
+        }
+        this.shapes = this.cells;
+    }
+}
+
+class ImageGrid extends ShapeGroup {
+    constructor(x, y, width, height, rows, cols) {
+        super([]);
+        this.cells = [];
+
+        this.rows = rows;
+        this.cols = cols;
+        const cw = width / this.cols;
+        const ch = height / this.rows;
+        const white = new Color(255);
+        const black = new Color(0);
+
+        for(let i = 0; i < cols; i++) {
+            for(let j = 0; j < rows; j++) {
+                const cx = x + (i * cw);
+                const cy = y + (j * ch);
+                const cell = new Pic(null, cx, cy, cw, ch);
+                cell.posx = i;
+                cell.posy = j;
                 cell.setStroke(1, black);
                 this.cells.push(cell);
             }
@@ -1055,6 +1084,9 @@ class Text extends Shape {
 
 class Canv {
     static random(min, max) {
+        if(Array.isArray(min)) {
+            return min[Canv.random(0, min.length-1)];   
+        }
         if (arguments.length === 1) {
             max = Math.floor(min);
             min = 0;
@@ -1230,7 +1262,7 @@ class Canv {
     resize() {
         if(this.fullscreen) {
             this.width = document.body.clientWidth;
-            this.height = document.body.clientHeight - 5;
+            this.height = document.body.clientHeight;
         }
     }
 
