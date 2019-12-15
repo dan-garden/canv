@@ -1198,6 +1198,9 @@ class Canv {
         this.height = 100;
         this.background = new Color(255);
 
+
+        const fns = ["setup", "update", "draw", "resize"];
+
         if (config && typeof config === "object") {
             if (!config.width && !config.height) {
                 config.fullscreen = true;
@@ -1205,7 +1208,7 @@ class Canv {
 
             const configKeys = Object.keys(config);
             configKeys.forEach(key => {
-                if (key === "setup" || key === "update" || key === "draw") {
+                if (fns.includes(key)) {
                     this["$" + key] = config[key].bind(this);
                 } else {
                     this[key] = config[key];
@@ -1262,12 +1265,20 @@ class Canv {
 
 
         if (this.fullscreen) {
-            this.resize();
-            window.addEventListener("resize", e => this.resize());
+            this.resizeHandler();
         }
+
+        window.addEventListener("resize", e => {
+            if (this.fullscreen) {
+                this.resizeHandler();
+            }
+            if(this.$resize) {
+                this.$resize.bind(this)();
+            }
+        });
     }
 
-    resize() {
+    resizeHandler() {
         if(this.fullscreen) {
             this.width = document.body.clientWidth;
             this.height = document.body.clientHeight;
