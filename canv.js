@@ -1280,8 +1280,8 @@ class Canv {
 
     resizeHandler() {
         if(this.fullscreen) {
-            this.width = document.body.clientWidth;
-            this.height = document.body.clientHeight;
+            this.width = window.innerWidth;
+            this.height = window.innerHeight;
         }
     }
 
