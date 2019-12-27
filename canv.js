@@ -187,6 +187,9 @@ class Vector {
         if(v instanceof Vector) {
             this.x += v.x;
             this.y += v.y;
+        } else if(!Number.isNaN(v)) {
+            this.x += v;
+            this.y += v;
         }
     }
 
@@ -194,6 +197,19 @@ class Vector {
         if(v instanceof Vector) {
             this.x -= v.x;
             this.y -= v.y;
+        } else if(!Number.isNaN(v)) {
+            this.x -= v;
+            this.y -= v;
+        }
+    }
+
+    multi(v) {
+        if(v instanceof Vector) {
+            this.x *= v.x;
+            this.y *= v.y;
+        } else if(!Number.isNaN(v)) {
+            this.x *= v;
+            this.y *= v;
         }
     }
 
