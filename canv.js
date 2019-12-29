@@ -157,6 +157,25 @@ class Color {
         this.b = -gray * value + this.b * (1+value);
         return this.normalize();
     }
+
+    get hsp() {
+        const hsp = Math.sqrt(
+            0.299 * (this.r * this.r) +
+            0.587 * (this.g * this.g) +
+            0.114 * (this.b * this.b)
+        );
+        return hsp;
+    }
+
+
+    lightOrDark() {
+        if (this.hsp>127.5) {
+            return 'light';
+        } 
+        else {
+            return 'dark';
+        }
+    }
 }
 
 class Vector {
