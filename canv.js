@@ -1322,7 +1322,7 @@ class Canv {
 
         // Set up touch events for mobile, etc
         this.canvas.addEventListener("touchstart", (e) => {
-            mousePos = this.getTouchPos(this.canvas, e);
+            let mousePos = this.getTouchPos(this.canvas, e);
             var touch = e.touches[0];
             var mouseEvent = new MouseEvent("mousedown", {
                 clientX: touch.clientX,
