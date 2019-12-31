@@ -1321,8 +1321,8 @@ class Canv {
 
 
         // Set up touch events for mobile, etc
-        this.canvas.addEventListener("touchstart", function (e) {
-            mousePos = getTouchPos(this.canvas, e);
+        this.canvas.addEventListener("touchstart", (e) => {
+            mousePos = this.getTouchPos(this.canvas, e);
             var touch = e.touches[0];
             var mouseEvent = new MouseEvent("mousedown", {
                 clientX: touch.clientX,
@@ -1330,11 +1330,11 @@ class Canv {
             });
             this.canvas.dispatchEvent(mouseEvent);
         }, false);
-        this.canvas.addEventListener("touchend", function (e) {
+        this.canvas.addEventListener("touchend", (e) => {
             var mouseEvent = new MouseEvent("mouseup", {});
             this.canvas.dispatchEvent(mouseEvent);
         }, false);
-        this.canvas.addEventListener("touchmove", function (e) {
+        this.canvas.addEventListener("touchmove", (e) => {
             var touch = e.touches[0];
             var mouseEvent = new MouseEvent("mousemove", {
                 clientX: touch.clientX,
@@ -1342,15 +1342,15 @@ class Canv {
             });
             this.canvas.dispatchEvent(mouseEvent);
         }, false);
+        
+    }
 
-        // Get the position of a touch relative to the canvas
-        function getTouchPos(canvasDom, touchEvent) {
-            var rect = canvasDom.getBoundingClientRect();
-            return {
-                x: touchEvent.touches[0].clientX - rect.left,
-                y: touchEvent.touches[0].clientY - rect.top
-            };
-        }
+    getTouchPos(canvasDom, touchEvent) {
+        var rect = canvasDom.getBoundingClientRect();
+        return {
+            x: touchEvent.touches[0].clientX - rect.left,
+            y: touchEvent.touches[0].clientY - rect.top
+        };
     }
 
     resizeHandler() {
