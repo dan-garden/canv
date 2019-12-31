@@ -1342,7 +1342,24 @@ class Canv {
             });
             this.canvas.dispatchEvent(mouseEvent);
         }, false);
+
+        document.body.addEventListener("touchstart", (e) => {
+            if (this.fullscreen && this.isMobile() && e.target == this.canvas) {
+                e.preventDefault();
+            }
+        }, false);
         
+        document.body.addEventListener("touchend", (e) => {
+            if (this.fullscreen && this.isMobile() && e.target == this.canvas) {
+                e.preventDefault();
+            }
+        }, false);
+
+        document.body.addEventListener("touchmove", (e) => {
+            if (this.fullscreen && this.isMobile() && e.target == this.canvas) {
+                e.preventDefault();
+            }
+        }, false);
     }
 
     getTouchPos(canvasDom, touchEvent) {
