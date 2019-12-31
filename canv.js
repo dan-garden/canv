@@ -135,9 +135,9 @@ class Color {
     }
 
     sepia() {
-        this.r = (0.393*this.r) + (0.769*this.g) + (0.189*this.b);
-        this.g = (0.349*this.r) + (0.686*this.g) + (0.168*this.b);
-        this.b = (0.272*this.r) + (0.534*this.g) + (0.131*this.b);
+        this.r = (0.393 * this.r) + (0.769 * this.g) + (0.189 * this.b);
+        this.g = (0.349 * this.r) + (0.686 * this.g) + (0.168 * this.b);
+        this.b = (0.272 * this.r) + (0.534 * this.g) + (0.131 * this.b);
         return this;
     }
 
@@ -151,10 +151,10 @@ class Color {
     }
 
     saturate(value) {
-        var gray = 0.2989*this.r + 0.5870*this.g + 0.1140*this.b;
-        this.r = -gray * value + this.r * (1+value);
-        this.g = -gray * value + this.g * (1+value);
-        this.b = -gray * value + this.b * (1+value);
+        var gray = 0.2989 * this.r + 0.5870 * this.g + 0.1140 * this.b;
+        this.r = -gray * value + this.r * (1 + value);
+        this.g = -gray * value + this.g * (1 + value);
+        this.b = -gray * value + this.b * (1 + value);
         return this.normalize();
     }
 
@@ -169,10 +169,9 @@ class Color {
 
 
     lightOrDark() {
-        if (this.hsp>127.5) {
+        if (this.hsp > 127.5) {
             return 'light';
-        } 
-        else {
+        } else {
             return 'dark';
         }
     }
@@ -185,10 +184,10 @@ class Vector {
     }
 
     static getLine(a, b, count) {
-        count = count+1;
+        count = count + 1;
         const d = Math.sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y)) / count;
         const fi = Math.atan2(b.y - a.y, b.x - a.x);
-        
+
         const points = [];
         for (let i = 0; i <= count; ++i) {
             points.push(new Vector(a.x + i * d * Math.cos(fi), a.y + i * d * Math.sin(fi)));
@@ -203,30 +202,30 @@ class Vector {
     }
 
     add(v) {
-        if(v instanceof Vector) {
+        if (v instanceof Vector) {
             this.x += v.x;
             this.y += v.y;
-        } else if(!Number.isNaN(v)) {
+        } else if (!Number.isNaN(v)) {
             this.x += v;
             this.y += v;
         }
     }
 
     subtract(v) {
-        if(v instanceof Vector) {
+        if (v instanceof Vector) {
             this.x -= v.x;
             this.y -= v.y;
-        } else if(!Number.isNaN(v)) {
+        } else if (!Number.isNaN(v)) {
             this.x -= v;
             this.y -= v;
         }
     }
 
     multi(v) {
-        if(v instanceof Vector) {
+        if (v instanceof Vector) {
             this.x *= v.x;
             this.y *= v.y;
-        } else if(!Number.isNaN(v)) {
+        } else if (!Number.isNaN(v)) {
             this.x *= v;
             this.y *= v;
         }
@@ -249,8 +248,8 @@ class ShapeEventListener {
     }
 
     register(type, fn) {
-        if(typeof type === "string" && typeof fn === "function") {
-            if(!this.exists(type)) {
+        if (typeof type === "string" && typeof fn === "function") {
+            if (!this.exists(type)) {
                 this.events[type] = [];
             }
 
@@ -259,9 +258,9 @@ class ShapeEventListener {
     }
 
     trigger(type, params) {
-        if(this.exists(type)) {
+        if (this.exists(type)) {
             this.events[type].forEach(event => {
-                if(params) {
+                if (params) {
                     event(...params)
                 } else {
                     event();
@@ -351,7 +350,7 @@ class Shape {
 
     setStroke(n, s) {
         this.stroke = new Color(n);
-        if(s) {
+        if (s) {
             this.setStrokeWidth(s);
         }
         this.showStroke = true;
@@ -396,31 +395,31 @@ class Shape {
     }
 
     preRender(canv) {
-        if(!this.shown) {
+        if (!this.shown) {
             return false;
         }
 
-        if(canv.mouseDown && this.contains(canv.mouseX, canv.mouseY)) {
+        if (canv.mouseDown && this.contains(canv.mouseX, canv.mouseY)) {
             this.$mousedown = true;
             this.trigger("mousedown", [canv]);
         }
 
-        if(this.contains(canv.mouseX, canv.mouseY) && this.$mousedown === true && !canv.mouseDown) {
+        if (this.contains(canv.mouseX, canv.mouseY) && this.$mousedown === true && !canv.mouseDown) {
             this.$mousedown = false;
             this.trigger("mouseup", [canv]);
             this.trigger("click", [canv]);
         }
 
-        if(!this.contains(canv.mouseX, canv.mouseY)) {
+        if (!this.contains(canv.mouseX, canv.mouseY)) {
             this.$mousedown = false;
         }
 
-        if(this.contains(canv.mouseX, canv.mouseY)) {
+        if (this.contains(canv.mouseX, canv.mouseY)) {
             this.$mouseover = true;
             this.trigger("mouseover", [canv]);
         }
 
-        if(this.$mouseover === true && !this.contains(canv.mouseX, canv.mouseY)) {
+        if (this.$mouseover === true && !this.contains(canv.mouseX, canv.mouseY)) {
             this.$mouseover = false;
             this.trigger("mouseout", [canv]);
         }
@@ -465,17 +464,17 @@ class ShapeGroup {
     }
 
     remove(i) {
-        if(this[i]) {
+        if (this[i]) {
             delete this[i];
         }
 
         this.shapes.splice(i, 1);
         return this;
     }
-    
+
     forEach(fn) {
-        if(typeof fn === "function") {
-            for(let i = this.length-1; i >= 0; --i) {
+        if (typeof fn === "function") {
+            for (let i = this.length - 1; i >= 0; --i) {
                 fn(this.shapes[i], i);
             }
         }
@@ -483,8 +482,8 @@ class ShapeGroup {
     }
 
     map(fn) {
-        if(typeof fn === "function") {
-            for(let i = this.length-1; i >= 0; --i) {
+        if (typeof fn === "function") {
+            for (let i = this.length - 1; i >= 0; --i) {
                 this.shapes[i] = fn(this.shapes[i], i);
             }
         }
@@ -492,11 +491,11 @@ class ShapeGroup {
     }
 
     filter(fn) {
-        if(typeof fn === "function") {
-            for(let i = this.length-1; i >= 0; --i) {
+        if (typeof fn === "function") {
+            for (let i = this.length - 1; i >= 0; --i) {
                 let f = fn(this.shapes[i], i);
-                if(!f) {
-                    this.remove(i);                           
+                if (!f) {
+                    this.remove(i);
                 }
             }
         }
@@ -544,15 +543,15 @@ class ShapeGroup {
         })
     }
 
-    shrink(n=1) {
+    shrink(n = 1) {
         this.forEach(s => s.size -= n)
     }
 
-    grow(n=1) {
+    grow(n = 1) {
         this.forEach(s => s.size += n)
     }
 
-    rotate(n=1) {
+    rotate(n = 1) {
         this.forEach(shape => shape.angle += n);
         return this;
     }
@@ -601,7 +600,7 @@ class Pic extends Shape {
     }
 
 
-    getPixels(x=0, y=0, w=this.width, h=this.height) {
+    getPixels(x = 0, y = 0, w = this.width, h = this.height) {
         const px = [];
         var canvas = document.createElement('canvas');
         canvas.width = w;
@@ -632,7 +631,7 @@ class Pic extends Shape {
         if (!this.loaded) {
             setTimeout(() => this.render(canv), 0);
         } else {
-            if(this.preRender(canv)) {
+            if (this.preRender(canv)) {
                 canv.ctx.save();
                 canv.ctx.beginPath();
                 this.renderRotation(canv);
@@ -652,13 +651,15 @@ class Pic extends Shape {
 }
 
 class Sprite extends ShapeGroup {
-    constructor() {super(...arguments)}
-    getString(width=100, height=100) {
+    constructor() {
+        super(...arguments)
+    }
+    getString(width = 100, height = 100) {
         const canv = document.createElement("canvas");
         const id = "sprite-" + Canv.random(10000, 99999);
         canv.id = id;
         document.body.append(canv);
-        const c = new Canv("#"+id, {
+        const c = new Canv("#" + id, {
             width,
             height,
             fullscreen: false,
@@ -679,7 +680,7 @@ class Point extends Shape {
     }
 
     render(canv) {
-        if(this.preRender(canv)) {
+        if (this.preRender(canv)) {
             canv.ctx.beginPath();
             canv.ctx.strokeStyle = this.color.toString();
             canv.ctx.strokeRect(this.x, this.y, 1, 1);
@@ -757,7 +758,7 @@ class Line extends Shape {
     }
 
     render(canv) {
-        if(this.preRender(canv)) {
+        if (this.preRender(canv)) {
             canv.ctx.beginPath();
             canv.ctx.lineWidth = this.strokeWidth;
             canv.ctx.lineCap = this.lineCap;
@@ -780,10 +781,10 @@ class Rect extends Shape {
     }
 
     set text(n) {
-        if(!n) {
+        if (!n) {
             this.str = false;
         } else {
-            if(this.str) {
+            if (this.str) {
                 this.str.string = n;
             } else {
                 this.str = new Text(n);
@@ -793,7 +794,7 @@ class Rect extends Shape {
     }
 
     get text() {
-        return this.str?this.str.string:false;
+        return this.str ? this.str.string : false;
     }
 
     renderText(canv) {
@@ -802,7 +803,7 @@ class Rect extends Shape {
     }
 
     render(canv) {
-        if(this.preRender(canv)) {
+        if (this.preRender(canv)) {
             canv.ctx.save();
             canv.ctx.beginPath();
             this.renderRotation(canv);
@@ -811,14 +812,14 @@ class Rect extends Shape {
                 canv.ctx.strokeStyle = this.stroke.toString();
                 canv.ctx.strokeRect(this.x, this.y, this.width, this.height);
             }
-    
+
             if (this.showFill) {
                 canv.ctx.fillStyle = this.color.toString();
                 canv.ctx.fillRect(this.x, this.y, this.width, this.height);
             }
             canv.ctx.closePath();
             canv.ctx.restore();
-            if(this.str) {
+            if (this.str) {
                 this.renderText(canv);
             }
         }
@@ -861,8 +862,8 @@ class Circle extends Shape {
     }
 
     render(canv) {
-        if(this.preRender(canv)) {
-            if(this.size >= 0) {
+        if (this.preRender(canv)) {
+            if (this.size >= 0) {
                 canv.ctx.beginPath();
                 if (this.showStroke) {
                     canv.ctx.lineWidth = this.strokeWidth;
@@ -870,7 +871,7 @@ class Circle extends Shape {
                     canv.ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
                     canv.ctx.stroke();
                 }
-    
+
                 if (this.showFill) {
                     canv.ctx.fillStyle = this.color.toString();
                     canv.ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
@@ -878,7 +879,7 @@ class Circle extends Shape {
                 }
                 canv.ctx.closePath();
             }
-        }        
+        }
     }
 }
 
@@ -904,7 +905,7 @@ class Triangle extends Shape {
     }
 
     render(canv) {
-        if(this.preRender(canv)) {
+        if (this.preRender(canv)) {
             canv.ctx.save();
             canv.ctx.beginPath();
             canv.ctx.moveTo(this.x1, this.y1);
@@ -919,7 +920,7 @@ class Triangle extends Shape {
                 canv.ctx.lineTo(this.x1, this.y1);
                 canv.ctx.stroke();
             }
-    
+
             if (this.showFill) {
                 canv.ctx.fillStyle = this.color.toString();
                 canv.ctx.fill();
@@ -1021,8 +1022,8 @@ class Grid extends ShapeGroup {
         const white = new Color(255);
         const black = new Color(0);
 
-        for(let i = 0; i < cols; i++) {
-            for(let j = 0; j < rows; j++) {
+        for (let i = 0; i < cols; i++) {
+            for (let j = 0; j < rows; j++) {
                 const cx = x + (i * cw);
                 const cy = y + (j * ch);
                 const cell = new Rect(cx, cy, cw, ch);
@@ -1049,8 +1050,8 @@ class ImageGrid extends ShapeGroup {
         const white = new Color(255);
         const black = new Color(0);
 
-        for(let i = 0; i < cols; i++) {
-            for(let j = 0; j < rows; j++) {
+        for (let i = 0; i < cols; i++) {
+            for (let j = 0; j < rows; j++) {
                 const cx = x + (i * cw);
                 const cy = y + (j * ch);
                 const cell = new Pic(null, cx, cy, cw, ch);
@@ -1103,7 +1104,7 @@ class Text extends Shape {
     }
 
     render(canv) {
-        if(this.preRender(canv)) {
+        if (this.preRender(canv)) {
             canv.ctx.beginPath();
             canv.ctx.textAlign = this.textAlign;
             canv.ctx.font = this.font;
@@ -1113,7 +1114,7 @@ class Text extends Shape {
                 canv.ctx.strokeStyle = this.stroke.toString();
                 canv.ctx.strokeText(this.string, this.x, this.fontSize + this.y);
             }
-    
+
             if (this.showFill) {
                 canv.ctx.fillStyle = this.color.toString();
                 this.width = canv.ctx.measureText(this.string).width;
@@ -1127,8 +1128,8 @@ class Text extends Shape {
 
 class Canv {
     static random(min, max) {
-        if(Array.isArray(min)) {
-            return min[Canv.random(0, min.length-1)];   
+        if (Array.isArray(min)) {
+            return min[Canv.random(0, min.length - 1)];
         }
         if (arguments.length === 1) {
             max = Math.floor(min);
@@ -1141,8 +1142,8 @@ class Canv {
     }
 
     static isMobile() {
-        return (/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|ipad|iris|kindle|Android|Silk|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino/i.test(navigator.userAgent) 
-            || /1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(navigator.userAgent.substr(0,4)))
+        return (/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|ipad|iris|kindle|Android|Silk|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino/i.test(navigator.userAgent) ||
+            /1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(navigator.userAgent.substr(0, 4)))
     }
 
     map(n, start1, stop1, start2, stop2, withinBounds) {
@@ -1312,20 +1313,54 @@ class Canv {
             if (this.fullscreen) {
                 this.resizeHandler();
             }
-            if(this.$resize) {
+            if (this.$resize) {
                 this.$resize.bind(this)();
             }
         });
+
+
+
+        // Set up touch events for mobile, etc
+        this.canvas.addEventListener("touchstart", function (e) {
+            mousePos = getTouchPos(this.canvas, e);
+            var touch = e.touches[0];
+            var mouseEvent = new MouseEvent("mousedown", {
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            });
+            this.canvas.dispatchEvent(mouseEvent);
+        }, false);
+        this.canvas.addEventListener("touchend", function (e) {
+            var mouseEvent = new MouseEvent("mouseup", {});
+            this.canvas.dispatchEvent(mouseEvent);
+        }, false);
+        this.canvas.addEventListener("touchmove", function (e) {
+            var touch = e.touches[0];
+            var mouseEvent = new MouseEvent("mousemove", {
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            });
+            this.canvas.dispatchEvent(mouseEvent);
+        }, false);
+
+        // Get the position of a touch relative to the canvas
+        function getTouchPos(canvasDom, touchEvent) {
+            var rect = canvasDom.getBoundingClientRect();
+            return {
+                x: touchEvent.touches[0].clientX - rect.left,
+                y: touchEvent.touches[0].clientY - rect.top
+            };
+        }
     }
 
     resizeHandler() {
-        if(this.fullscreen) {
+        if (this.fullscreen) {
             this.width = window.innerWidth;
             this.height = window.innerHeight;
         }
     }
 
-    start(runSetup=false) {
+    start(runSetup = false) {
         if (!this.$running) {
             this.$running = true;
             if (this.$setup && runSetup) this.$setup();
@@ -1338,8 +1373,8 @@ class Canv {
         return this.keysDown[key];
     }
 
-    pressKey(keys, hold=10) {
-        if(typeof keys === "string") {
+    pressKey(keys, hold = 10) {
+        if (typeof keys === "string") {
             keys = [keys];
         }
 
@@ -1405,13 +1440,13 @@ class Canv {
     }
 
     filterPixels(filter) {
-        if(typeof filter === "function") {
+        if (typeof filter === "function") {
             const pixels = this.$pixels || this.getPixels();
-            for(let y = 0; y < pixels.length; y++) {
-                for(let x = 0; x < pixels[y].length; x++) {
+            for (let y = 0; y < pixels.length; y++) {
+                for (let x = 0; x < pixels[y].length; x++) {
                     const color = pixels[y][x];
                     const changed = filter(color, x, y);
-                    if(color.toString()!==changed.toString()) {
+                    if (color.toString() !== changed.toString()) {
                         pixels[y][x] = changed;
                     }
                 }
@@ -1421,7 +1456,9 @@ class Canv {
     }
 
     invert() {
-        this.filterPixels(color => {return color.invert()});
+        this.filterPixels(color => {
+            return color.invert()
+        });
     }
 
     toDataURL() {
@@ -1432,7 +1469,7 @@ class Canv {
         return this.toDataURL(...arguments);
     }
 
-    getPixels(x=0, y=0, w=this.width, h=this.height) {
+    getPixels(x = 0, y = 0, w = this.width, h = this.height) {
         const px = [];
         const data = this.ctx.getImageData(x, y, w, h).data;
         const l = w * h;
@@ -1454,10 +1491,10 @@ class Canv {
         return px;
     }
 
-    setPixels(data, x=0, y=0, w=this.width, h=this.height) {
+    setPixels(data, x = 0, y = 0, w = this.width, h = this.height) {
         const imageData = [];
-        for(let xc = 0; xc < h; xc++) {
-            for(let yc = 0; yc < w; yc++) {
+        for (let xc = 0; xc < h; xc++) {
+            for (let yc = 0; yc < w; yc++) {
                 const color = data[xc][yc];
                 imageData.push(color.r, color.g, color.b, color.a);
             }
