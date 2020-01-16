@@ -6,6 +6,15 @@ class ActionRecorder {
         this.lastTime = false;
     }
 
+    export() {
+        return JSON.stringify(this.actions);
+    }
+
+    import(data) {
+        this.actions = JSON.parse(data);
+        return this;
+    }
+
     startRecording() {
         this.startTime = Date.now();
         this.lastTime = Date.now();
