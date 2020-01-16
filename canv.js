@@ -11,7 +11,11 @@ class ActionRecorder {
     }
 
     import(data) {
-        this.actions = JSON.parse(data);
+        if(typeof data === "string") {
+            this.actions = JSON.parse(data);
+        } else if(typeof data === "object") {
+            this.actions = data;
+        }
         return this;
     }
 
