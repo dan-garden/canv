@@ -1,3 +1,71 @@
+class ActionRecorder {
+    constructor() {
+        this.actions = [];
+        this.startTime = false;
+        this.recording = false;
+        this.lastTime = false;
+    }
+
+    startRecording() {
+        this.startTime = Date.now();
+        this.lastTime = Date.now();
+        this.recording = true;
+
+        return this;
+    }
+
+    replayRecording(fn, cb) {
+        const playMark = (playingIndex) => {
+            const action = this.actions[playingIndex];
+            const nextAction = this.actions[playingIndex + 1];
+            if (typeof fn === "function") {
+                fn(action.data, action.timeSince);
+            }
+            if (nextAction) {
+                setTimeout(() => {
+                    playMark(playingIndex + 1);
+                }, nextAction.timeSince);
+            } else {
+                if (typeof cb === "function") {
+                    cb();
+                }
+            }
+        }
+        playMark(0);
+    }
+
+    stopRecording() {
+        this.recording = false;
+        return this;
+    }
+
+    resetRecording() {
+        this.actions = [];
+        this.startTime = false;
+        this.recording = false;
+        this.lastTime = false;
+        return this;
+    }
+
+    clear() {
+        this.actions = [];
+        this.lastTime = Date.now();
+        return this;
+    }
+
+    mark(data) {
+        if (!this.recording) {
+            this.startRecording();
+        }
+        this.actions.push({
+            timeSince: Date.now() - this.lastTime,
+            data
+        });
+        this.lastTime = Date.now();
+        return this;
+    }
+}
+
 class Color {
     static fromHex(hex) {
         const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
