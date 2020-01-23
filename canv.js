@@ -195,7 +195,7 @@ class Color {
         return this.normalize();
     }
 
-    opacity(n) {
+    setAlpha(n) {
         this.a = n;
         return this;
     }
@@ -647,6 +647,7 @@ class Pic extends Shape {
         super(x, y);
         this.image = new Image();
         this.src = src;
+        this.opacity = 1;
 
         this.$pixels = false;
 
@@ -716,6 +717,7 @@ class Pic extends Shape {
                 canv.ctx.save();
                 canv.ctx.beginPath();
                 this.renderRotation(canv);
+                canv.ctx.globalAlpha = this.opacity;
                 if (this.showStroke) {
                     canv.ctx.lineWidth = this.strokeWidth;
                     canv.ctx.strokeStyle = this.stroke.toString();
@@ -724,6 +726,7 @@ class Pic extends Shape {
                 if (this.showFill) {
                     canv.ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
                 }
+                canv.ctx.globalAlpha = 1;
                 canv.ctx.closePath();
                 canv.ctx.restore();
             }
