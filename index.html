@@ -24,5 +24,20 @@
         <canvas></canvas>
         
         <script src="canv.js"></script>
+
+        <script>
+            const test = new Canv('canvas', {
+                setup() {
+                    this.transition = 0.1;
+                },
+
+                draw() {
+                    this.background = 0;
+                    if(this.mouseDown) {
+                        this.add(new Circle(this.mouseX, this.mouseY, 5).setColor(255));
+                    }
+                }
+            })
+        </script>
     </body>
 </html>

@@ -1276,6 +1276,7 @@ class Canv {
         this.$background = new Color(n);
         if (this.$background) {
             let bg = new Rect(0, 0, this.width, this.height);
+            this.background.a = this.transition;
             bg.color = this.background;
             this.add(bg);
         }
@@ -1310,6 +1311,7 @@ class Canv {
         }
         this.ctx = this.canvas.getContext('2d');
 
+        this.transition = 0;
         this.frames = 0;
         this.$pixels = false;
         this.$running = false;
@@ -1321,8 +1323,6 @@ class Canv {
 
         this.width = 100;
         this.height = 100;
-        this.background = new Color(255);
-
 
         const fns = ["setup", "update", "draw", "resize"];
 
@@ -1342,6 +1342,7 @@ class Canv {
         }
 
         this.binds();
+        this.background = new Color(255);
         this.start(true);
 
         if (noSelector) {
