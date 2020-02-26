@@ -1311,7 +1311,7 @@ class Canv {
         }
         this.ctx = this.canvas.getContext('2d');
 
-        this.transition = 0;
+        this.transition = 1;
         this.frames = 0;
         this.$pixels = false;
         this.$running = false;
