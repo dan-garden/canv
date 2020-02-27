@@ -1478,7 +1478,7 @@ class Canv {
         if (!this.$running) {
             this.$running = true;
             if (this.$setup && runSetup) this.$setup();
-            if (this.$update || this.$draw) requestAnimationFrame(this.loop.bind(this));
+            if (this.$update || this.$draw) requestAnimationFrame(this.$loop.bind(this));
         }
         return this;
     }
@@ -1524,7 +1524,7 @@ class Canv {
         this.add(txt);
     }
 
-    loop() {
+    $loop() {
         if (this.$running) {
             this.frames++;
             if (this.$update && (this.$updateDelay === 0 || this.frames % this.$updateDelay === 0)) {
@@ -1533,7 +1533,7 @@ class Canv {
             if (this.$draw && (this.$drawDelay === 0 || this.frames % this.$drawDelay === 0)) {
                 if (this.$draw) this.$draw(this.frames);
             }
-            requestAnimationFrame(this.loop.bind(this));
+            requestAnimationFrame(this.$loop.bind(this));
         }
     }
 
