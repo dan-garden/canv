@@ -1299,6 +1299,10 @@ class Canv {
         return this.canvas.height
     }
 
+    get firstFrame() {
+        return this.frames === 1;
+    }
+
 
     constructor(selector, config) {
         let noSelector = true;
