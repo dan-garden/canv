@@ -443,6 +443,14 @@ class Shape {
         return this;
     }
 
+    applyConfig(config) {
+        if(typeof config === "object") {
+            Object.keys(config).forEach(configKey => {
+                this[configKey] = config[configKey];
+            })
+        }
+    }
+
     moveX(n) {
         this.x += n;
         return this;
