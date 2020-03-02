@@ -609,10 +609,15 @@ class ShapeGroup {
         }).some(contains => contains == true);
     }
 
-    add(n) {
-        this.shapes.unshift(n);
-        // this.shapes.push(n);
+    add(n, i) {
+        if(typeof n === "string" && typeof i === "object") {
+            this[n] = i;
+            this.shapes.unshift(i);
+        } else {
+            this.shapes.unshift(n);
+        }
         return this;
+        // this.shapes.push(n);
     }
 
     clear() {
