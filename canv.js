@@ -617,7 +617,6 @@ class ShapeGroup {
             this.shapes.unshift(n);
         }
         return this;
-        // this.shapes.push(n);
     }
 
     clear() {
