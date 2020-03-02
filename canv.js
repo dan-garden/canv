@@ -786,7 +786,7 @@ class Point extends Shape {
 }
 
 class Line extends Shape {
-    constructor(x1, y1, x2, y2) {
+    constructor(x1=0, y1=0, x2=0, y2=0) {
         super();
 
         if (x1 instanceof Vector && y1 instanceof Vector) {
@@ -811,19 +811,35 @@ class Line extends Shape {
     }
 
     get x1() {
-        return this.x;
+        return this.pos.x;
     }
 
     set x1(n) {
-        this.x = n;
+        this.pos.x = n;
     }
 
     get y1() {
-        return this.y;
+        return this.pos.y;
     }
 
     set y1(n) {
-        this.y = n;
+        this.pos.y = n;
+    }
+
+    get x2() {
+        return this.pos2.x;
+    }
+
+    set x2(n) {
+        this.pos2.x = n;
+    }
+
+    get y2() {
+        return this.pos2.y;
+    }
+
+    set y2(n) {
+        this.pos2.y = n;
     }
 
     set width(n) {
