@@ -123,7 +123,7 @@ class Color {
             this.b = 0;
             this.a = 0;
         } else if (arguments.length === 1) {
-            if (arguments[0] instanceof Color) {
+            if (arguments[0] instanceof Color || typeof arguments[0] === "object") {
                 this.r = arguments[0].r;
                 this.g = arguments[0].g;
                 this.b = arguments[0].b;
