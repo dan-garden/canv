@@ -116,6 +116,7 @@ class Color {
     }
 
     constructor() {
+        console.log(arguments.length);
         if (arguments.length === 0) {
             this.r = 0;
             this.g = 0;
