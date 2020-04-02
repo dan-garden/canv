@@ -223,7 +223,7 @@ class Color {
     }
 
     opacity(a) {
-        this.a += a;
+        this.a = a;
         return new Color(this);
     }
 
