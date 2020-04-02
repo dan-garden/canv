@@ -222,6 +222,11 @@ class Color {
         return this;
     }
 
+    opacity(a) {
+        this.a += a;
+        return this;
+    }
+
     randomize() {
         const c = Color.random();
         this.r = c.r;
