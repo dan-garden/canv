@@ -224,7 +224,7 @@ class Color {
 
     opacity(a) {
         this.a += a;
-        return this;
+        return new Color(this);
     }
 
     randomize() {
