@@ -32,12 +32,12 @@ class ActionRecorder {
             const action = this.actions[playingIndex];
             const nextAction = this.actions[playingIndex + 1];
             if (typeof fn === "function") {
-                fn(action.data, action.timeSince);
+                fn(action.d, action.t);
             }
             if (nextAction) {
                 setTimeout(() => {
                     playMark(playingIndex + 1);
-                }, nextAction.timeSince);
+                }, nextAction.t);
             } else {
                 if (typeof cb === "function") {
                     cb();
@@ -66,13 +66,13 @@ class ActionRecorder {
         return this;
     }
 
-    mark(data) {
+    mark(d) {
         if (!this.recording) {
             this.startRecording();
         }
         this.actions.push({
-            timeSince: Date.now() - this.lastTime,
-            data
+            t: Date.now() - this.lastTime,
+            d
         });
         this.lastTime = Date.now();
         return this;
