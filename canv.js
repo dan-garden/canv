@@ -1048,58 +1048,6 @@ class Triangle extends Shape {
     }
 }
 
-class Heart extends Shape {
-    constructor(x = 0, y = 0, radius = 5) {
-        super(x, y);
-        this.size = radius;
-    }
-
-    set radius(n) {
-        this.size = n;
-    }
-
-    setRadius(n) {
-        this.size = n;
-        return this;
-    }
-
-    contains(x, y) {
-        return false;
-    }
-
-    render(canv) {
-        if (this.preRender(canv)) {
-            canv.ctx.save();
-            canv.ctx.beginPath();
-            
-            canv.ctx.moveTo(this.x, this.y);
-            canv.ctx.bezierCurveTo(this.x, 37, 70, 25, 50, 25);
-            canv.ctx.bezierCurveTo(20, 25, 20, 62.5, 20, 62.5);
-            canv.ctx.bezierCurveTo(20, 80, 40, 102, this.x, 120);
-            canv.ctx.bezierCurveTo(110, 102, 130, 80, 130, 62.5);
-            canv.ctx.bezierCurveTo(130, 62.5, 130, 25, 100, 25);
-            canv.ctx.bezierCurveTo(85, 25, this.x, 37, this.x, this.y);
-
-            if (this.showStroke) {
-                canv.ctx.lineWidth = this.strokeWidth;
-                if (this.dash.length > 0) {
-                    canv.ctx.setLineDash(this.dash);
-                }
-                canv.ctx.strokeStyle = this.stroke.toString();
-                canv.ctx.lineTo(this.x1, this.y1);
-                canv.ctx.stroke();
-            }
-
-            if (this.showFill) {
-                canv.ctx.fillStyle = this.color.toString();
-                canv.ctx.fill();
-            }
-            canv.ctx.closePath();
-            canv.ctx.restore();
-        }
-    }
-}
-
 class BarGraph extends ShapeGroup {
     constructor(config) {
         super({
