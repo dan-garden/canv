@@ -1153,6 +1153,10 @@ class Grid extends ShapeGroup {
         }
         this.shapes = this.cells;
     }
+
+    cell(x, y) {
+        return this.cells[this.cols * y + x];
+    }
 }
 
 class ImageGrid extends ShapeGroup {
