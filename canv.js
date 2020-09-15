@@ -1155,7 +1155,7 @@ class Grid extends ShapeGroup {
     }
 
     cell(x, y) {
-        return this.cells[this.cols * y + x];
+        return this.cells[this.cols * x + y];
     }
 }
 
