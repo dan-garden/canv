@@ -1311,7 +1311,7 @@ class Canv {
 
     set keyFrames(x) {
         this.$keyFrames = (n) => {
-            x(n);
+            x.bind(this)(n);
         };
     }
 
