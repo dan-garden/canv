@@ -1304,10 +1304,18 @@ class Canv {
             x(n);
         };
     }
-
     get draw() {
         return this.$draw;
     }
+    set keyframes(x) {
+        this.$keyframes = (n) => {
+            x(n);
+        };
+    }
+    get keyframes() {
+        return this.$keyframes;
+    }
+
 
     set background(n) {
         this.$background = new Color(n);
@@ -1365,7 +1373,7 @@ class Canv {
         this.width = 100;
         this.height = 100;
 
-        const fns = ["setup", "update", "draw", "resize"];
+        const fns = ["setup", "update", "draw", "resize", "keyframes"];
 
         if (config && typeof config === "object") {
             if (!config.width && !config.height) {
@@ -1558,6 +1566,9 @@ class Canv {
             this.frames++;
             if (this.$update && (this.$updateDelay === 0 || this.frames % this.$updateDelay === 0)) {
                 if (this.$update) this.$update(this.frames);
+            }
+            if (this.$keyframes) {
+                if (this.$keyframes) this.$keyframes(this.frames);
             }
             if (this.$draw && (this.$drawDelay === 0 || this.frames % this.$drawDelay === 0)) {
                 if (this.$draw) this.$draw(this.frames);
