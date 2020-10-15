@@ -1375,11 +1375,11 @@ class Canv {
 
         this.easingFns = {
             easeInOutQuint(t, b, c, d) {
-                if ((t /= (d) / 2) < 1) return c / 2 * t * t * t * t * t + b;
+                if ((t /= (d / 1000) / 2) < 1) return c / 2 * t * t * t * t * t + b;
                 return c / 2 * ((t -= 2) * t * t * t * t + 2) + b;
             },
             easeLinear(t, b, c, d) {
-                return c * t / (d) + b;
+                return c * t / (d / 1000) + b;
             }
         };
 
