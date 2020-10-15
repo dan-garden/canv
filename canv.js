@@ -1513,6 +1513,7 @@ class Canv {
         if (!this.$running) {
             this.$running = true;
             if (this.$setup && runSetup) this.$setup();
+            if (this.$keyFrames) this.$keyFrames();
             if (this.$update || this.$draw) requestAnimationFrame(this.$loop.bind(this));
         }
         return this;
