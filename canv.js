@@ -1559,14 +1559,14 @@ class Canv {
         this.add(txt);
     }
 
-    $loop() {
+    $loop(timestamp) {
         if (this.$running) {
             this.frames++;
             if (this.$update && (this.$updateDelay === 0 || this.frames % this.$updateDelay === 0)) {
                 if (this.$update) this.$update(this.frames);
             }
             if (this.$keyFramesUpdate) {
-                this.$keyFramesUpdate(this.frames);
+                this.$keyFramesUpdate(timestamp);
             }
             if (this.$draw && (this.$drawDelay === 0 || this.frames % this.$drawDelay === 0)) {
                 if (this.$draw) this.$draw(this.frames);
