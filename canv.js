@@ -1378,7 +1378,7 @@ class Canv {
 
         const fns = ["setup", "update", "draw", "resize"];
 
-        this.easingFns = {
+        this.$easingFns = {
             easeInOutQuint(t, b, c, d) {
                 if ((t /= (d / 1000) / 2) < 1) return c / 2 * t * t * t * t * t + b;
                 return c / 2 * ((t -= 2) * t * t * t * t + 2) + b;
