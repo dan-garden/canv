@@ -1766,20 +1766,25 @@ class Canv {
             if (now - config.start >= config.duration) {
 
             } else {
-                const key = config.key;
-                const from = config.shape[key];
-                const to = config.to;
-                const p = (now - config.start) / config.duration;
-                const fn = this.$easingFns[config.ease].bind(this.$easingFns);
-                const val = fn(p);
-                config.shape[key] = config.startVal + (to - from) * val;
+                Object.keys(config.vals).forEach(key => {
+                    const from = config.shape[key];
+                    const to = config.vals[key];
+                    const p = (now - config.start) / config.duration;
+                    const fn = this.$easingFns[config.ease].bind(this.$easingFns);
+                    const val = fn(p);
+                    config.shape[key] = config.startVals[key] + (to - from) * val;
+                })
             }
         }
     }
 
     keyFrame(config) {
         config.start = Date.now();
-        config.startVal = config.shape[config.key];
+        config.startVals = {};
+        Object.keys(config.vals).map(key => {
+            config.startVals[key] = config.shape[key];
+        })
+
         this.kf_keyFramesList.push(config);
     }
 
