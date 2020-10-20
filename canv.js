@@ -1486,7 +1486,7 @@ class Canv {
                 return 0.5 * ((n -= 2) * n * ((s + 1) * n + s) + 2);
             },
             inBounce: function (n) {
-                return 1 - exports.outBounce(1 - n);
+                return 1 - this.outBounce(1 - n);
             },
             outBounce: function (n) {
                 if (n < (1 / 2.75)) {
@@ -1500,8 +1500,8 @@ class Canv {
                 }
             },
             inOutBounce: function (n) {
-                if (n < .5) return exports.inBounce(n * 2) * .5;
-                return exports.outBounce(n * 2 - 1) * .5 + .5;
+                if (n < .5) return this.inBounce(n * 2) * .5;
+                return this.outBounce(n * 2 - 1) * .5 + .5;
             },
             inElastic: function (n) {
                 var s, a = 0.1,
