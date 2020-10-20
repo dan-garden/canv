@@ -1390,105 +1390,105 @@ class Canv {
 
 
         this.$easingFns = {
-            linear: function (n) {
+            linear: (n)  => {
                 return n;
             },
 
-            inQuad: function (n) {
+            inQuad: (n)  => {
                 return n * n;
             },
-            outQuad: function (n) {
+            outQuad: (n)  => {
                 return n * (2 - n);
             },
-            inOutQuad: function (n) {
+            inOutQuad: (n)  => {
                 n *= 2;
                 if (n < 1) return 0.5 * n * n;
                 return -0.5 * (--n * (n - 2) - 1);
             },
-            inCube: function (n) {
+            inCube: (n)  => {
                 return n * n * n;
             },
-            outCube: function (n) {
+            outCube: (n)  => {
                 return --n * n * n + 1;
             },
-            inOutCube: function (n) {
+            inOutCube: (n)  => {
                 n *= 2;
                 if (n < 1) return 0.5 * n * n * n;
                 return 0.5 * ((n -= 2) * n * n + 2);
             },
-            inQuart: function (n) {
+            inQuart: (n)  => {
                 return n * n * n * n;
             },
-            outQuart: function (n) {
+            outQuart: (n)  => {
                 return 1 - (--n * n * n * n);
             },
-            inOutQuart: function (n) {
+            inOutQuart: (n)  => {
                 n *= 2;
                 if (n < 1) return 0.5 * n * n * n * n;
                 return -0.5 * ((n -= 2) * n * n * n - 2);
             },
-            inQuint: function (n) {
+            inQuint: (n)  => {
                 return n * n * n * n * n;
             },
 
-            outQuint: function (n) {
+            outQuint: (n)  => {
                 return --n * n * n * n * n + 1;
             },
 
-            inOutQuint: function (n) {
+            inOutQuint: (n)  => {
                 n *= 2;
                 if (n < 1) return 0.5 * n * n * n * n * n;
                 return 0.5 * ((n -= 2) * n * n * n * n + 2);
             },
-            inSine: function (n) {
+            inSine: (n)  => {
                 return 1 - Math.cos(n * Math.PI / 2);
             },
-            outSine: function (n) {
+            outSine: (n)  => {
                 return Math.sin(n * Math.PI / 2);
             },
-            inOutSine: function (n) {
+            inOutSine: (n)  => {
                 return .5 * (1 - Math.cos(Math.PI * n));
             },
-            inExpo: function (n) {
+            inExpo: (n)  => {
                 return 0 == n ? 0 : Math.pow(1024, n - 1);
             },
-            outExpo: function (n) {
+            outExpo: (n)  => {
                 return 1 == n ? n : 1 - Math.pow(2, -10 * n);
             },
-            inOutExpo: function (n) {
+            inOutExpo: (n)  => {
                 if (0 == n) return 0;
                 if (1 == n) return 1;
                 if ((n *= 2) < 1) return .5 * Math.pow(1024, n - 1);
                 return .5 * (-Math.pow(2, -10 * (n - 1)) + 2);
             },
-            inCirc: function (n) {
+            inCirc: (n)  => {
                 return 1 - Math.sqrt(1 - n * n);
             },
-            outCirc: function (n) {
+            outCirc: (n)  => {
                 return Math.sqrt(1 - (--n * n));
             },
-            inOutCirc: function (n) {
+            inOutCirc: (n)  => {
                 n *= 2
                 if (n < 1) return -0.5 * (Math.sqrt(1 - n * n) - 1);
                 return 0.5 * (Math.sqrt(1 - (n -= 2) * n) + 1);
             },
-            inBack: function (n) {
+            inBack: (n)  => {
                 var s = 1.70158;
                 return n * n * ((s + 1) * n - s);
             },
-            outBack: function (n) {
+            outBack: (n)  => {
                 var s = 1.70158;
                 return --n * n * ((s + 1) * n + s) + 1;
             },
-            inOutBack: function (n) {
+            inOutBack: (n)  => {
                 var s = 1.70158 * 1.525;
                 if ((n *= 2) < 1) return 0.5 * (n * n * ((s + 1) * n - s));
                 return 0.5 * ((n -= 2) * n * ((s + 1) * n + s) + 2);
             },
-            inBounce: function (n) {
+            inBounce: (n)  => {
                 return 1 - this.outBounce(1 - n);
             },
-            outBounce: function (n) {
+            outBounce: (n)  => {
                 if (n < (1 / 2.75)) {
                     return 7.5625 * n * n;
                 } else if (n < (2 / 2.75)) {
@@ -1499,11 +1499,11 @@ class Canv {
                     return 7.5625 * (n -= (2.625 / 2.75)) * n + 0.984375;
                 }
             },
-            inOutBounce: function (n) {
+            inOutBounce: (n)  => {
                 if (n < .5) return this.inBounce(n * 2) * .5;
                 return this.outBounce(n * 2 - 1) * .5 + .5;
             },
-            inElastic: function (n) {
+            inElastic: (n)  => {
                 var s, a = 0.1,
                     p = 0.4;
                 if (n === 0) return 0;
@@ -1514,7 +1514,7 @@ class Canv {
                 } else s = p * Math.asin(1 / a) / (2 * Math.PI);
                 return -(a * Math.pow(2, 10 * (n -= 1)) * Math.sin((n - s) * (2 * Math.PI) / p));
             },
-            outElastic: function (n) {
+            outElastic: (n)  => {
                 var s, a = 0.1,
                     p = 0.4;
                 if (n === 0) return 0;
@@ -1525,7 +1525,7 @@ class Canv {
                 } else s = p * Math.asin(1 / a) / (2 * Math.PI);
                 return (a * Math.pow(2, -10 * n) * Math.sin((n - s) * (2 * Math.PI) / p) + 1);
             },
-            inOutElastic: function (n) {
+            inOutElastic: (n)  => {
                 var s, a = 0.1,
                     p = 0.4;
                 if (n === 0) return 0;
