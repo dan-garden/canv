@@ -1371,7 +1371,12 @@ class Canv {
         this.width = 100;
         this.height = 100;
 
-        const fns = ["setup", "update", "draw", "resize", "keyFramesUpdate"];
+        this.kf_secondsPassed = 0;
+        this.kf_oldTimestamp = 0;
+        this.kf_timePassed = 0;
+        this.kf_keyFramesList = [];
+
+        const fns = ["setup", "update", "draw", "resize"];
 
         this.easingFns = {
             easeInOutQuint(t, b, c, d) {
@@ -1576,14 +1581,32 @@ class Canv {
             if (this.$update && (this.$updateDelay === 0 || this.frames % this.$updateDelay === 0)) {
                 if (this.$update) this.$update(this.frames);
             }
-            if (this.$keyFramesUpdate) {
-                this.$keyFramesUpdate(timestamp);
-            }
+            this.$keyFramesUpdate(timestamp);
             if (this.$draw && (this.$drawDelay === 0 || this.frames % this.$drawDelay === 0)) {
                 if (this.$draw) this.$draw(this.frames);
             }
             requestAnimationFrame(this.$loop.bind(this));
         }
+    }
+
+    $keyFramesUpdate(timestamp) {
+        this.kf_secondsPassed = (timestamp - this.kf_oldTimestamp) / 1000;
+        this.kf_oldTimestamp = timestamp;
+        this.kf_timePassed += this.kf_secondsPassed
+        for (let i = 0; i < this.kf_keyFramesList.length; i++) {
+            let keyFrame = this.kf_keyFramesList[i];
+            const key = keyFrame.key;
+            const from = keyFrame.shape[key];
+            const to = keyFrame.to;
+            const speed = keyFrame.speed;
+            const fn = this.$easingFns[keyFrame.ease] || this.$easingFns["easeLinear"];
+
+            keyFrame.shape[key] = fn(this.kf_timePassed, from, to - from, speed);
+        }
+    }
+
+    keyFrame(config) {
+        this.kf_keyFramesList.push(config);
     }
 
     set updateDelay(delay) {
