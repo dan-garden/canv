@@ -1772,7 +1772,7 @@ class Canv {
                     const p = (now - config.start) / config.duration;
                     const fn = this.$easingFns[config.ease].bind(this.$easingFns);
                     const val = fn(p);
-                    config.shape[key] = config.startVals[key] + (to) * val;
+                    config.shape[key] = config.startVals[key] + (from - to) * val;
                 })
             }
         }
