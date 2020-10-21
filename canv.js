@@ -1767,9 +1767,13 @@ class Canv {
                     const from = config.shape.kf_startVals[key];
                     const to = config.vals[key];
                     config.shape[key] = to;
-                    if(typeof config.kf_callback === "function") {
-                        config.kf_callback(config.shape);
+                    if (typeof config.shape.kf_callback === "function") {
+                        config.shape.kf_callback(config.shape);
                         this.kf_keyFramesList.splice(config.index, 1);
+                    }
+
+                    if(typeof config.shape.kf_resolve === "function") {
+                        config.shape.kf_resolve();
                     }
                 });
             } else {
@@ -1786,14 +1790,29 @@ class Canv {
     }
 
     keyFrame(config) {
-        config.shape.kf_start = Date.now();
-        config.shape.kf_startVals = {};
-        config.shape.kf_callback = config.callback;
-        Object.keys(config.vals).map(key => {
-            config.shape.kf_startVals[key] = config.shape[key];
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+
+                if(arguments.length > 1) {
+                    config.shape = arguments[0];
+                    config.vals = arguments[1];
+                    config.duration = arguments[2];
+                    config.ease = arguments[3] || "linear";
+                    config.callback = arguments[4] || (() => {});
+                }
+
+                config.shape.kf_start = Date.now();
+                config.shape.kf_startVals = {};
+                config.shape.kf_callback = config.callback;
+                config.shape.kf_resolve = resolve;
+                Object.keys(config.vals).map(key => {
+                    config.shape.kf_startVals[key] = config.shape[key];
+                })
+
+                config.index = this.kf_keyFramesList.length;
+                this.kf_keyFramesList.push(config);
+            }, 0);
         })
-        config.index = this.kf_keyFramesList.length;
-        this.kf_keyFramesList.push(config);
     }
 
     set updateDelay(delay) {
