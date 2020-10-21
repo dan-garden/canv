@@ -1762,29 +1762,37 @@ class Canv {
 
         for (let i = 0; i < this.kf_keyFramesList.length; i++) {
             const config = this.kf_keyFramesList[i];
-
-            if (now - config.start >= config.duration) {
-
+            if (now - config.shape.kf_start >= config.duration) {
+                Object.keys(config.vals).forEach(key => {
+                    const from = config.shape.kf_startVals[key];
+                    const to = config.vals[key];
+                    config.shape[key] = to;
+                    if(typeof config.kf_callback === "function") {
+                        config.kf_callback(config.shape);
+                        this.kf_keyFramesList.splice(config.index, 1);
+                    }
+                });
             } else {
                 Object.keys(config.vals).forEach(key => {
-                    const from = config.shape[key];
+                    const from = config.shape.kf_startVals[key];
                     const to = config.vals[key];
-                    const p = (now - config.start) / config.duration;
+                    const p = (now - config.shape.kf_start) / config.duration;
                     const fn = this.$easingFns[config.ease].bind(this.$easingFns);
                     const val = fn(p);
-                    config.shape[key] = config.startVals[key] + (to - from) * val;
+                    config.shape[key] = (from + (to - from) * val);
                 })
             }
         }
     }
 
     keyFrame(config) {
-        config.start = Date.now();
-        config.startVals = {};
+        config.shape.kf_start = Date.now();
+        config.shape.kf_startVals = {};
+        config.shape.kf_callback = config.callback;
         Object.keys(config.vals).map(key => {
-            config.startVals[key] = config.shape[key];
+            config.shape.kf_startVals[key] = config.shape[key];
         })
-
+        config.index = this.kf_keyFramesList.length;
         this.kf_keyFramesList.push(config);
     }
 
