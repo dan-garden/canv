@@ -508,7 +508,7 @@ class Shape {
             this.$mousedown = false;
         }
 
-        if (this.contains(canv.mouseX, canv.mouseY)) {
+        if (this.contains(canv.mouseX, canv.mouseY) && !this.$mouseover) {
             this.$mouseover = true;
             this.trigger("mouseover", [canv]);
         }
@@ -915,7 +915,7 @@ class Rect extends Shape {
     }
 
     renderText(canv) {
-        this.str.setPos(this.x + (this.width / 2), this.y + (this.height / 2));
+        this.str.setPos(this.x + (this.width / 2), this.y + (this.height / 2) - (this.str.fontSize / 2));
         this.str.render(canv);
     }
 
