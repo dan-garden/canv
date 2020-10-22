@@ -1309,10 +1309,14 @@ class Canv {
         return this.$draw;
     }
 
-    set keyFrames(x) {
-        this.$keyFrames = (n) => {
+    set keyframes(x) {
+        this.$keyframes = (n) => {
             x.bind(this)(n);
         };
+    }
+
+    get keyframes() {
+        return this.$keyframes;
     }
 
     set background(n) {
@@ -1680,7 +1684,7 @@ class Canv {
         if (!this.$running) {
             this.$running = true;
             if (this.$setup && runSetup) this.$setup();
-            if (this.$keyFrames) this.$keyFrames.bind(this)();
+            if (this.$keyframes) this.$keyframes.bind(this)();
             if (this.$update || this.$draw) requestAnimationFrame(this.$loop.bind(this));
         }
         return this;
@@ -1789,7 +1793,7 @@ class Canv {
         }
     }
 
-    keyFrame(config) {
+    keyframe(config) {
         return new Promise((resolve, reject) => {
             setTimeout(() => {
 
