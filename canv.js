@@ -1247,110 +1247,129 @@ class Text extends Shape {
 }
 
 
+class Menu extends ShapeGroup {
+    constructor(app, elements) {
+        super([]);
+
+        function styleShape(el, shape, firstRender = false) {
+            const timing = !firstRender && el.timing !== undefined ? el.timing : 0;
+
+            if (timing && el.width !== undefined && el.height !== undefined) {
+                app.keyframe(shape, {
+                    width: el.width,
+                    height: el.height
+                }, timing, el.ease || "linear");
+            } else {
+                if (el.width !== undefined) {
+                    shape.width = el.width;
+                }
+                if (el.height !== undefined) {
+                    shape.height = el.height;
+                }
+            }
+
+            if (el.background !== undefined) {
+                if (timing) {
+                    app.keyframe(shape.color, new Color(el.background), timing, el.ease || "linear");
+                } else {
+                    shape.color = new Color(el.background);
+                }
+            }
+
+            if (el.text !== undefined) {
+                shape.text = el.text;
+            }
+
+            if (el.color && shape.text) {
+                shape.str.color = el.color;
+                // app.keyframe(shape.str.color, new Color(el.color), 300);
+            }
+
+
+            if (firstRender) {
+                if (el.x !== undefined) {
+                    shape.origX = el.x;
+                    if (!el.parent && el.x === "center") {
+                        el.x = app.halfWidth(shape.width);
+                    } else if (el.parent) {
+                        if (el.x === "center") {
+                            el.x = el.parent.x + (el.parent.width / 2) - (el.width / 2);
+                        } else {
+                            el.x = el.parent.x + shape.origX;
+                        }
+                    }
+
+                    shape.x = el.x;
+                }
+
+                if (el.y !== undefined) {
+                    shape.origY = el.y;
+                    if (!el.parent && el.y === "center") {
+                        el.y = app.halfHeight(shape.height);
+                    } else if (el.parent) {
+                        if (el.y === "center") {
+                            el.y = el.parent.y + (el.parent.height / 2) - (el.height / 2);
+                        } else {
+                            el.y = el.parent.y + shape.origY;
+                        }
+                    }
+
+                    shape.y = el.y;
+                }
+            }
+
+        }
+
+        function getShapes(children, level = 1) {
+            const group = new ShapeGroup();
+            children.forEach(el => {
+                let endShape = new ShapeGroup();
+                let shape;
+
+                if (el.type === "container") {
+                    shape = new Rect;
+                } else if (el.type === "button") {
+                    shape = new Rect;
+                }
+
+                styleShape(el, shape, true);
+
+                if (el.hover) {
+                    shape.addEventListener("mouseover", () => {
+                        styleShape(el.hover, shape);
+                    });
+                    shape.addEventListener("mouseout", () => {
+                        styleShape(el, shape);
+                    })
+                }
+                if (el.click) {
+                    shape.addEventListener("click", () => {
+                        el.click.bind(app)();
+                    })
+                }
+                endShape.add(shape);
+                if (el.children && el.children.length) {
+                    el.children = el.children.map(child => {
+                        child.parent = shape;
+                        return child;
+                    })
+                    const childShapes = getShapes(el.children, level + 1);
+                    endShape.add(childShapes)
+                    childShapes.parent = endShape;
+                }
+
+                group.add(endShape);
+            });
+
+            return (level === 1) ? group.shapes : group;
+        }
+
+        this.shapes = getShapes(elements);
+    }
+}
+
+
 class Canv {
-    static random(min, max) {
-        if (Array.isArray(min)) {
-            return min[Canv.random(0, min.length - 1)];
-        }
-        if (arguments.length === 1) {
-            max = Math.floor(min);
-            min = 0;
-        } else if (arguments.length === 2) {
-            min = Math.ceil(min);
-            max = Math.floor(max);
-        }
-        return Math.floor(Math.random() * (max - min + 1)) + min;
-    }
-
-    static isMobile() {
-        return (/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|ipad|iris|kindle|Android|Silk|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino/i.test(navigator.userAgent) ||
-            /1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(navigator.userAgent.substr(0, 4)))
-    }
-
-    map(n, start1, stop1, start2, stop2, withinBounds) {
-        var newval = (n - start1) / (stop1 - start1) * (stop2 - start2) + start2;
-        if (!withinBounds) {
-            return newval;
-        }
-        if (start2 < stop2) {
-            return this.constrain(newval, start2, stop2);
-        } else {
-            return this.constrain(newval, stop2, start2);
-        }
-    };
-
-    constrain(n, low, high) {
-        return Math.max(Math.min(n, high), low);
-    };
-
-    set width(x) {
-        this.canvas.width = x;
-    }
-    set height(x) {
-        this.canvas.height = x;
-    }
-    set setup(x) {
-        this.$setup = () => {
-            x();
-        };
-    }
-    set update(x) {
-        this.$update = (n) => {
-            x(n);
-        };
-    }
-    set draw(x) {
-        this.$draw = (n) => {
-            x(n);
-        };
-    }
-
-    get draw() {
-        return this.$draw;
-    }
-
-    set keyframes(x) {
-        this.$keyframes = (n) => {
-            x.bind(this)(n);
-        };
-    }
-
-    get keyframes() {
-        return this.$keyframes;
-    }
-
-    set background(n) {
-        this.$background = new Color(n);
-        if (this.$background) {
-            let bg = new Rect(0, 0, this.width, this.height);
-            this.background.a = this.transition;
-            bg.color = this.background;
-            this.add(bg);
-        }
-    }
-
-    get background() {
-        return this.$background;
-    }
-
-    get width() {
-        return this.canvas.width
-    }
-    get randomWidth() {
-        return Canv.random(0, this.width);
-    }
-    get randomHeight() {
-        return Canv.random(0, this.height);
-    }
-    get height() {
-        return this.canvas.height
-    }
-
-    get firstFrame() {
-        return this.frames === 1;
-    }
-
-
     constructor(selector, config) {
         let noSelector = true;
         if (typeof selector === "object") {
@@ -1920,5 +1939,108 @@ class Canv {
         if (n) {
             n.render(this);
         }
+    }
+
+    static random(min, max) {
+        if (Array.isArray(min)) {
+            return min[Canv.random(0, min.length - 1)];
+        }
+        if (arguments.length === 1) {
+            max = Math.floor(min);
+            min = 0;
+        } else if (arguments.length === 2) {
+            min = Math.ceil(min);
+            max = Math.floor(max);
+        }
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    static isMobile() {
+        return (/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|ipad|iris|kindle|Android|Silk|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino/i.test(navigator.userAgent) ||
+            /1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(navigator.userAgent.substr(0, 4)))
+    }
+
+    map(n, start1, stop1, start2, stop2, withinBounds) {
+        var newval = (n - start1) / (stop1 - start1) * (stop2 - start2) + start2;
+        if (!withinBounds) {
+            return newval;
+        }
+        if (start2 < stop2) {
+            return this.constrain(newval, start2, stop2);
+        } else {
+            return this.constrain(newval, stop2, start2);
+        }
+    };
+
+    constrain(n, low, high) {
+        return Math.max(Math.min(n, high), low);
+    };
+
+    set width(x) {
+        this.canvas.width = x;
+    }
+    set height(x) {
+        this.canvas.height = x;
+    }
+    set setup(x) {
+        this.$setup = () => {
+            x();
+        };
+    }
+    set update(x) {
+        this.$update = (n) => {
+            x(n);
+        };
+    }
+    set draw(x) {
+        this.$draw = (n) => {
+            x(n);
+        };
+    }
+
+    get draw() {
+        return this.$draw;
+    }
+
+    set keyframes(x) {
+        this.$keyframes = (n) => {
+            x.bind(this)(n);
+        };
+    }
+
+    get keyframes() {
+        return this.$keyframes;
+    }
+
+    set background(n) {
+        this.$background = new Color(n);
+        if (this.$background) {
+            let bg = new Rect(0, 0, this.width, this.height);
+            this.background.a = this.transition;
+            bg.color = this.background;
+            this.add(bg);
+        }
+    }
+
+    get background() {
+        return this.$background;
+    }
+
+    get width() {
+        return this.canvas.width
+    }
+    get randomWidth() {
+        return Canv.random(0, this.width);
+    }
+    get randomHeight() {
+        return Canv.random(0, this.height);
+    }
+    
+    get height() {
+        return this.canvas.height
+    }
+
+    get firstFrame() {
+        return this.frames === 1;
     }
 }
