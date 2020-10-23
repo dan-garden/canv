@@ -34,7 +34,7 @@
                 this.speed = 1;
                 this.stackerHeight = 20;
                 this.level = 0;
-                this.dropDelay = 300;
+                this.dropDelay = 1000;
                 this.increase = 0.5;
 
                 this.current = false;
@@ -48,6 +48,10 @@
                 this.current.dir = 1;
             },
 
+            getLastTower() {
+                return this.tower.shapes[this.tower.length - 1];
+            },
+
             update() {
                 if(this.keyDown(" ") && !this.dropped && this.canDrop) {
                     this.dropped = true;
@@ -55,7 +59,6 @@
 
                 if(this.dropped && this.canDrop) {
                     this.tower.add(this.current);
-                    this.current = false;
                 }
 
 
@@ -73,10 +76,17 @@
 
 
                 if(this.dropped && this.canDrop) {
+
+                    const lastTower = this.getLastTower();
+                    // const offset = this.current.x - lastTower.x;
+                    // this.current.width = this.current.width - offset;
+
                     this.level++;
                     this.speed += this.increase;
                     this.canDrop = false;
                     this.dropped = false;
+                    this.current = false;
+
                     setTimeout(() => {
                         this.canDrop = true;
                         this.startBlock();
