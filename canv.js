@@ -550,6 +550,10 @@ class ShapeGroup {
         Object.keys(shapes).forEach(shapeKey => {
             this[shapeKey] = shapes[shapeKey];
         })
+
+        this.$oldPos = new Vector();
+        this.$pos = new Vector();
+        this.setPivot(0, 0);
         this.shapes = Object.values(shapes);
     }
 
@@ -565,6 +569,44 @@ class ShapeGroup {
     set stroke(x) {
         this.forEach(shape => shape.stroke = x);
     }
+
+    setPivot(x, y) {
+        this.$oldPos = new Vector(x, y);
+        this.$pos = new Vector(x, y);
+
+        return this;
+    }
+
+
+    set x(n) {
+        const offset = this.$oldPos.x - this.$pos.x;
+        this.forEach(shape => {
+            shape.x -= offset;
+        })
+
+        this.$oldPos.x = this.$pos.x;
+        this.$pos.x = n;
+    }
+
+    get x() {
+        return this.$pos.x;
+    }
+
+    set y(n) {
+        const offset = this.$oldPos.y - this.$pos.y;
+        this.forEach(shape => {
+            shape.y -= offset;
+        })
+
+        this.$oldPos.y = this.$pos.y;
+        this.$pos.y = n;
+    }
+
+    get y() {
+        return this.$pos.y;
+    }
+
+
 
     remove(i) {
         if (this[i]) {

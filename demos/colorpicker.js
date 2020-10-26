@@ -7,7 +7,6 @@ const app = new Canv('canvas', {
 
         this.pic = false;
         this.hoverColor = false;
-        this.setImage("demos/demo.png");
         this.preview = false;
 
         this.canvas.addEventListener("click", e => {
@@ -46,6 +45,7 @@ const app = new Canv('canvas', {
     },
 
     draw() {
+        this.clear();
         if (this.hoverColor) {
             this.background = this.hoverColor;
         }
