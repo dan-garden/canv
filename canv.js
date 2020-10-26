@@ -165,6 +165,15 @@ class Color {
             `rgb(${this.r}, ${this.g}, ${this.b})`
     }
 
+    componentToHex(c) {
+        const hex = c.toString(16);
+        return hex.length == 1 ? "0" + hex : hex;
+    }
+
+    toHex() {
+        return "#" + this.componentToHex(this.r) + this.componentToHex(this.g) + this.componentToHex(this.b);
+    }
+
     normalize() {
         if (this.r > 255) {
             this.r = 255;
