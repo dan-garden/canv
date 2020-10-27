@@ -333,6 +333,10 @@ class Vector {
     moveY(n) {
         this.y += n;
     }
+
+    clone() {
+        return new Vector(this.x, this.y);
+    }
 }
 
 class ShapeEventListener {
@@ -489,6 +493,28 @@ class Shape {
         return false;
     }
 
+    get center() {
+        return new Vector(this.x, this.y);
+    }
+
+    static centroid(pts) {
+        var first = pts[0], last = pts[pts.length-1];
+        if (first.x != last.x || first.y != last.y) pts.push(first);
+        var twicearea=0,
+        x=0, y=0,
+        nPts = pts.length,
+        p1, p2, f;
+        for ( var i=0, j=nPts-1 ; i<nPts ; j=i++ ) {
+           p1 = pts[i]; p2 = pts[j];
+           f = p1.x*p2.y - p2.x*p1.y;
+           twicearea += f;          
+           x += ( p1.x + p2.x ) * f;
+           y += ( p1.y + p2.y ) * f;
+        }
+        f = twicearea * 3;
+        return new Vector(x/f, y/f);
+     }
+
     addEventListener(type, fn) {
         this.$events.register(type, fn);
     }
@@ -553,8 +579,8 @@ class ShapeGroup {
 
         this.$oldPos = new Vector();
         this.$pos = new Vector();
-        this.setPivot(0, 0);
         this.shapes = Object.values(shapes);
+        this.updatePivot();
     }
 
     setColor(x) {
@@ -571,17 +597,31 @@ class ShapeGroup {
     }
 
     setPivot(x, y) {
-        this.$oldPos = new Vector(x, y);
-        this.$pos = new Vector(x, y);
-
+        if(x instanceof Vector) {
+            this.$oldPos = x.clone();
+            this.$pos = x.clone();
+        } else {
+            this.$oldPos = new Vector(x, y);
+            this.$pos = new Vector(x, y);    
+        }
         return this;
     }
 
+    updatePivot() {
+        const center = this.center;
+        this.setPivot(center.x, center.y);
+    }
 
     set x(n) {
         const offset = this.$oldPos.x - this.$pos.x;
         this.forEach(shape => {
-            shape.x -= offset;
+            if(shape instanceof Triangle) {
+                shape.x1 -= offset;
+                shape.x2 -= offset;
+                shape.x3 -= offset;
+            } else {
+                shape.x -= offset;
+            }
         })
 
         this.$oldPos.x = this.$pos.x;
@@ -595,7 +635,13 @@ class ShapeGroup {
     set y(n) {
         const offset = this.$oldPos.y - this.$pos.y;
         this.forEach(shape => {
-            shape.y -= offset;
+            if(shape instanceof Triangle) {
+                shape.y1 -= offset;
+                shape.y2 -= offset;
+                shape.y3 -= offset;
+            } else {
+                shape.y -= offset;
+            }
         })
 
         this.$oldPos.y = this.$pos.y;
@@ -614,6 +660,7 @@ class ShapeGroup {
         }
 
         this.shapes.splice(i, 1);
+        this.updatePivot();
         return this;
     }
 
@@ -665,6 +712,24 @@ class ShapeGroup {
         }).some(contains => contains == true);
     }
 
+    get center() {
+        if(this.length === 0) {
+            return new Vector(0, 0);
+        } else if(this.length === 1) {
+            return this.shapes[0].center;
+        } else if(this.length === 2) {
+            const shape1 = this.shapes[0].center;
+            const shape2 = this.shapes[1].center;
+            return new Vector((shape1.x + shape2.x) / 2, (shape1.y + shape2.y) / 2);
+        } else if(this.length > 2) {
+            const centerPoints = [];
+            this.shapes.forEach(shape => {
+                centerPoints.push(shape.center);
+            });
+            return Shape.centroid(centerPoints);
+        }
+    }
+
     add(n, i) {
         if (typeof n === "string" && typeof i === "object") {
             this[n] = i;
@@ -672,11 +737,16 @@ class ShapeGroup {
         } else {
             this.shapes.unshift(n);
         }
+
+        const center = this.center;
+        this.setPivot(center.x, center.y);
         return this;
     }
 
     clear() {
         this.shapes = [];
+        const center = this.center;
+        this.setPivot(center.x, center.y);
         return this;
     }
 
@@ -970,6 +1040,10 @@ class Rect extends Shape {
         this.str.render(canv);
     }
 
+    get center() {
+        return new Vector(this.x + (this.width / 2), this.y + (this.height / 2));
+    }
+
     render(canv) {
         if (this.preRender(canv)) {
             canv.ctx.save();
@@ -1029,6 +1103,10 @@ class Circle extends Shape {
         return ((x - this.x) * (x - this.x) + (y - this.y) * (y - this.y) <= this.radius * this.radius);
     }
 
+    get center() {
+        return new Vector(this.x, this.y);
+    }
+
     render(canv) {
         if (this.preRender(canv)) {
             if (this.size >= 0) {
@@ -1063,13 +1141,29 @@ class Triangle extends Shape {
     get x1() {
         return this.x;
     }
+    
+    set x1(n) {
+        this.x = n;
+    }
 
     get y1() {
         return this.y;
     }
 
+    set y1(n) {
+        this.y = n;
+    }
+
     contains(x, y) {
         return false;
+    }
+
+    get center() {
+        return Shape.centroid([ 
+            new Vector(this.x1, this.y1),
+            new Vector(this.x2, this.y2),
+            new Vector(this.x3, this.y3),
+        ])
     }
 
     render(canv) {
