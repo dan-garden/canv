@@ -1558,6 +1558,8 @@ class Canv {
         this.$updateDelay = 0;
         this.$drawDelay = 0;
         this.mouseOver = true;
+        this.clicked = false;
+
 
         this.keysDown = {};
 
@@ -1776,6 +1778,10 @@ class Canv {
             this.mouseDown = false;
         })
 
+        this.canvas.addEventListener("click", e => {
+            this.clicked = true;
+        })
+
         this.canvas.addEventListener("mousemove", e => {
             this.mousePrevX = this.mouseX;
             this.mousePrevY = this.mouseY;
@@ -1936,6 +1942,7 @@ class Canv {
     $loop(timestamp) {
         if (this.$running) {
             this.frames++;
+
             if (this.$update && (this.$updateDelay === 0 || this.frames % this.$updateDelay === 0)) {
                 if (this.$update) this.$update(this.frames);
             }
@@ -1943,6 +1950,11 @@ class Canv {
             if (this.$draw && (this.$drawDelay === 0 || this.frames % this.$drawDelay === 0)) {
                 if (this.$draw) this.$draw(this.frames);
             }
+
+            if(this.clicked) {
+                this.clicked = false;
+            }
+
             requestAnimationFrame(this.$loop.bind(this));
         }
     }
