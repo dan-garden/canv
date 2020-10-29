@@ -1770,7 +1770,7 @@ class Canv {
             this.mouseDown = true;
             this.mouse = this.getMousePos(e);
 
-            this.mouseX = this.mouse.y;
+            this.mouseX = this.mouse.x;
             this.mouseY = this.mouse.y;
         })
 
@@ -1790,7 +1790,7 @@ class Canv {
 
             this.mouse = this.getMousePos(e);
 
-            this.mouseX = this.mouse.y;
+            this.mouseX = this.mouse.x;
             this.mouseY = this.mouse.y;
         });
 
