@@ -296,6 +296,10 @@ class Vector {
         return this;
     }
 
+    get center() {
+        return this;
+    }
+
     add(v) {
         if (v instanceof Vector) {
             this.x += v.x;
@@ -936,6 +940,26 @@ class Line extends Shape {
         this.pos2.moveY(n);
     }
 
+    get center() {
+        return new Vector((this.pos.x + this.pos2.x) / 2, (this.pos.y + this.pos2.y) / 2);
+    }
+
+    get x() {
+        return this.x1;
+    }
+
+    set x(n) {
+        this.x1 = n;
+    }
+
+    get y() {
+        return this.y1;
+    }
+
+    set y(n) {
+        this.y1 = n;
+    }
+
     get x1() {
         return this.pos.x;
     }
@@ -1397,8 +1421,9 @@ class Menu extends ShapeGroup {
         super([]);
 
         function styleShape(el, shape, firstRender = false) {
+            el.timing = el.timing || (el.hover ? el.hover.timing : false) || 0;
+            el.ease = el.ease || (el.hover ? el.hover.ease : false) || 0;
             const timing = !firstRender && el.timing !== undefined ? el.timing : 0;
-
             if (timing && el.width !== undefined && el.height !== undefined) {
                 app.keyframe(shape, {
                     width: el.width,
@@ -1470,7 +1495,6 @@ class Menu extends ShapeGroup {
             children.forEach(el => {
                 let endShape = new ShapeGroup();
                 let shape;
-
                 if (el.type === "container") {
                     shape = new Rect;
                 } else if (el.type === "button") {
@@ -1533,11 +1557,13 @@ class Canv {
 
         this.$updateDelay = 0;
         this.$drawDelay = 0;
+        this.mouseOver = true;
 
         this.keysDown = {};
 
         this.width = 100;
         this.height = 100;
+        this.mouse = new Vector(0, 0);
 
         this.kf_secondsPassed = 0;
         this.kf_oldTimestamp = 0;
@@ -1732,11 +1758,18 @@ class Canv {
         }
     }
 
+    getMousePos(e) {
+        var rect = this.canvas.getBoundingClientRect();
+        return new Vector(e.clientX - rect.left, e.clientY - rect.top);
+    }
+
     binds() {
         this.canvas.addEventListener("mousedown", e => {
             this.mouseDown = true;
-            this.mouseX = this.mouseOver ? e.layerX : false;
-            this.mouseY = this.mouseOver ? e.layerY : false;
+            this.mouse = this.getMousePos(e);
+
+            this.mouseX = this.mouse.y;
+            this.mouseY = this.mouse.y;
         })
 
         this.canvas.addEventListener("mouseup", e => {
@@ -1746,8 +1779,13 @@ class Canv {
         this.canvas.addEventListener("mousemove", e => {
             this.mousePrevX = this.mouseX;
             this.mousePrevY = this.mouseY;
-            this.mouseX = this.mouseOver ? e.layerX : false;
-            this.mouseY = this.mouseOver ? e.layerY : false;
+
+            this.prevMouse = this.mouse;
+
+            this.mouse = this.getMousePos(e);
+
+            this.mouseX = this.mouse.y;
+            this.mouseY = this.mouse.y;
         });
 
         this.canvas.addEventListener("mouseover", e => {

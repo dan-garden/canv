@@ -1,22 +1,16 @@
 const app = new Canv('canvas', {
     fullscreen: true,
-    // setup() {
-    //     this.points = new ShapeGroup();
+    setup() {
+        this.circle = new Circle(this.halfWidth(), this.halfHeight(), 40);
+        this.canvas.addEventListener("mousedown", async () => {
+            this.keyframe(this.circle.pos, { x: this.mouse.x, y: this.mouse.y }, 500, "outElastic");
+            this.keyframe(this.circle, { size: 10 }, 500, "outElastic");
+            this.keyframe(this.circle, { size: 40 }, 200, "linear");
+        })
+    },
 
-    //     this.center = new Circle(0, 0, 5);
-    // },
-
-    // update() {
-    //     // if(this.frames % 10 === 0) {
-    //     //     const circle = new Circle(this.randomWidth, this.randomHeight, 1);
-    //     //     this.points.add(circle);
-    //     // }
-    //     // // this.center.pos = this.points.center;
-    // },
-
-    // draw() {
-    //     this.clear();
-    //     // this.add(this.points);
-    //     // this.add(this.center);
-    // },
+    draw() {
+        this.clear();
+        this.add(this.circle);
+    }
 })

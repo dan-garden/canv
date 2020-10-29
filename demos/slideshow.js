@@ -3,10 +3,10 @@ const app = new Canv('canvas', {
     height: window.innerHeight - 4,
 
     setup() {
-        this.ease = "fade";
+        this.ease = "outBounce";
         this.easeTiming = 2000;
         this.autoPlay = true;
-        this.autoDelay = 10000;
+        this.autoDelay = 4000;
 
         this.images = this.testList();
         this.curIndex = 0;
@@ -24,7 +24,7 @@ const app = new Canv('canvas', {
         const arr = [];
         const count = 500;
         for (let i = 0; i < count; i++) {
-            const pic = new Pic(`https://picsum.photos/seed/index___${i}/${imgW}/${imgH}`);
+            const pic = new Pic(`https://picsum.photos/${imgW}/${imgH}`);
             pic.index = i;
             arr.push(pic);
         }
