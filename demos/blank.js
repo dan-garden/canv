@@ -1,19 +1,18 @@
 const app = new Canv('canvas', {
-    fullscreen: true,
-    setup() {
-        this.circle = new Circle(this.halfWidth(), this.halfHeight(), 40);
+    async setup() {
+        const req = await fetch("https://majoreventsgc.com/wp-json/wp/v2/pages");
+        this.pages = await req.json();
+    },
+
+    changePage(num) {
+        document.body.innerHTML = this.pages[num].content.rendered;
     },
 
     update() {
-        if(this.clicked) {
-            this.keyframe(this.circle.pos, { x: this.mouse.x, y: this.mouse.y }, 500, "outElastic");
-            this.keyframe(this.circle, { size: 10 }, 500, "outElastic");
-            this.keyframe(this.circle, { size: 40 }, 200, "linear");
-        }
+
     },
 
     draw() {
-        this.clear();
-        this.add(this.circle);
+
     }
 })
