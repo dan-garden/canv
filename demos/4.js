@@ -4,7 +4,7 @@ const app = new Canv('canvas', {
 
     setup() {
         // this.easing = Canv.random(Object.keys(this.$easingFns));
-        this.easing = "inElastic";
+        this.easing = "inCirc";
         this.timing = 3000;
         this.gate = new ShapeGroup({
             topLeft: new Rect(0, 0, this.halfWidth(), this.halfHeight()),
