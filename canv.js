@@ -1,3 +1,42 @@
+//Element getters and setters (for keyframes)
+HTMLElement.prototype.__defineGetter__("top", function() {
+    return parseInt(this.style.top.replace("px", ""));
+});
+HTMLElement.prototype.__defineSetter__("top", function(val) {
+    return this.style.top = val + "px";
+});
+HTMLElement.prototype.__defineGetter__("left", function() {
+    return parseInt(this.style.left.replace("px", ""));
+});
+HTMLElement.prototype.__defineSetter__("left", function(val) {
+    return this.style.left = val + "px";
+});
+HTMLElement.prototype.__defineGetter__("right", function() {
+    return parseInt(this.style.right.replace("px", ""));
+});
+HTMLElement.prototype.__defineSetter__("right", function(val) {
+    return this.style.right = val + "px";
+});
+HTMLElement.prototype.__defineGetter__("bottom", function() {
+    return parseInt(this.style.bottom.replace("px", ""));
+});
+HTMLElement.prototype.__defineSetter__("bottom", function(val) {
+    return this.style.bottom = val + "px";
+});
+HTMLElement.prototype.__defineGetter__("width", function() {
+    return parseInt(this.style.width.replace("px", ""));
+});
+HTMLElement.prototype.__defineSetter__("width", function(val) {
+    return this.style.width = val + "px";
+});
+HTMLElement.prototype.__defineGetter__("height", function() {
+    return parseInt(this.style.height.replace("px", ""));
+});
+HTMLElement.prototype.__defineSetter__("height", function(val) {
+    return this.style.height = val + "px";
+});
+
+
 class ActionRecorder {
     constructor() {
         this.actions = [];
@@ -880,7 +919,7 @@ class Sprite extends ShapeGroup {
     constructor() {
         super(...arguments)
     }
-    getString(width = 100, height = 100) {
+    toString(width = 100, height = 100) {
         const canv = document.createElement("canvas");
         const id = "sprite-" + Canv.random(10000, 99999);
         canv.id = id;
@@ -896,7 +935,7 @@ class Sprite extends ShapeGroup {
         });
         let sprite = c.createSprite(this);
         document.body.removeChild(canv);
-        return sprite;
+        return new Pic(sprite);
     }
 }
 
@@ -1415,7 +1454,6 @@ class Text extends Shape {
     }
 }
 
-
 class Menu extends ShapeGroup {
     constructor(app, elements) {
         super([]);
@@ -1537,7 +1575,6 @@ class Menu extends ShapeGroup {
     }
 }
 
-
 class Canv {
     constructor(selector, config) {
         let noSelector = true;
@@ -1559,6 +1596,7 @@ class Canv {
         this.$drawDelay = 0;
         this.mouseOver = true;
         this.clicked = false;
+        this.keyframeStart = false;
 
 
         this.keysDown = {};
@@ -1893,7 +1931,7 @@ class Canv {
             this.$running = true;
             if (this.$setup && runSetup) this.$setup();
             if (this.$keyframes) this.$keyframes.bind(this)();
-            if (this.$update || this.$draw) requestAnimationFrame(this.$loop.bind(this));
+            if (this.$update || this.$draw || this.keyframeStart) requestAnimationFrame(this.$loop.bind(this));
         }
         return this;
     }
@@ -2008,6 +2046,7 @@ class Canv {
     }
 
     keyframe(config) {
+        this.keyframeStart = true;
         return new Promise((resolve, reject) => {
             setTimeout(() => {
 
