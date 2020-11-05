@@ -452,6 +452,18 @@ class Shape {
         return this.pos.y;
     }
 
+    set opacity(n) {
+        this.color.a = n;
+    }
+
+    get opacity() {
+        return this.color.a;
+    }
+
+    setAlpha(n) {
+        this.opacity = n;
+    }
+
     noStroke() {
         this.showFill = true;
         this.showStroke = false;
@@ -1454,127 +1466,6 @@ class Text extends Shape {
     }
 }
 
-class Menu extends ShapeGroup {
-    constructor(app, elements) {
-        super([]);
-
-        function styleShape(el, shape, firstRender = false) {
-            el.timing = el.timing || (el.hover ? el.hover.timing : false) || 0;
-            el.ease = el.ease || (el.hover ? el.hover.ease : false) || 0;
-            const timing = !firstRender && el.timing !== undefined ? el.timing : 0;
-            if (timing && el.width !== undefined && el.height !== undefined) {
-                app.keyframe(shape, {
-                    width: el.width,
-                    height: el.height
-                }, timing, el.ease || "linear");
-            } else {
-                if (el.width !== undefined) {
-                    shape.width = el.width;
-                }
-                if (el.height !== undefined) {
-                    shape.height = el.height;
-                }
-            }
-
-            if (el.background !== undefined) {
-                if (timing) {
-                    app.keyframe(shape.color, new Color(el.background), timing, el.ease || "linear");
-                } else {
-                    shape.color = new Color(el.background);
-                }
-            }
-
-            if (el.text !== undefined) {
-                shape.text = el.text;
-            }
-
-            if (el.color && shape.text) {
-                shape.str.color = el.color;
-                // app.keyframe(shape.str.color, new Color(el.color), 300);
-            }
-
-
-            if (firstRender) {
-                if (el.x !== undefined) {
-                    shape.origX = el.x;
-                    if (!el.parent && el.x === "center") {
-                        el.x = app.halfWidth(shape.width);
-                    } else if (el.parent) {
-                        if (el.x === "center") {
-                            el.x = el.parent.x + (el.parent.width / 2) - (el.width / 2);
-                        } else {
-                            el.x = el.parent.x + shape.origX;
-                        }
-                    }
-
-                    shape.x = el.x;
-                }
-
-                if (el.y !== undefined) {
-                    shape.origY = el.y;
-                    if (!el.parent && el.y === "center") {
-                        el.y = app.halfHeight(shape.height);
-                    } else if (el.parent) {
-                        if (el.y === "center") {
-                            el.y = el.parent.y + (el.parent.height / 2) - (el.height / 2);
-                        } else {
-                            el.y = el.parent.y + shape.origY;
-                        }
-                    }
-
-                    shape.y = el.y;
-                }
-            }
-
-        }
-
-        function getShapes(children, level = 1) {
-            const group = new ShapeGroup();
-            children.forEach(el => {
-                let endShape = new ShapeGroup();
-                let shape;
-                if (el.type === "container") {
-                    shape = new Rect;
-                } else if (el.type === "button") {
-                    shape = new Rect;
-                }
-
-                styleShape(el, shape, true);
-
-                if (el.hover) {
-                    shape.addEventListener("mouseover", () => {
-                        styleShape(el.hover, shape);
-                    });
-                    shape.addEventListener("mouseout", () => {
-                        styleShape(el, shape);
-                    })
-                }
-                if (el.click) {
-                    shape.addEventListener("click", () => {
-                        el.click.bind(app)();
-                    })
-                }
-                endShape.add(shape);
-                if (el.children && el.children.length) {
-                    el.children = el.children.map(child => {
-                        child.parent = shape;
-                        return child;
-                    })
-                    const childShapes = getShapes(el.children, level + 1);
-                    endShape.add(childShapes)
-                    childShapes.parent = endShape;
-                }
-
-                group.add(endShape);
-            });
-
-            return (level === 1) ? group.shapes : group;
-        }
-
-        this.shapes = getShapes(elements);
-    }
-}
-
 class Canv {
     constructor(selector, config) {
         let noSelector = true;
@@ -1595,6 +1486,7 @@ class Canv {
         this.$updateDelay = 0;
         this.$drawDelay = 0;
         this.mouseOver = true;
+        this.mouseUp = false;
         this.clicked = false;
         this.keyframeStart = false;
 
@@ -1806,6 +1698,7 @@ class Canv {
     binds() {
         this.canvas.addEventListener("mousedown", e => {
             this.mouseDown = true;
+            this.mouseUp = false;
             this.mouse = this.getMousePos(e);
 
             this.mouseX = this.mouse.x;
@@ -1814,6 +1707,7 @@ class Canv {
 
         this.canvas.addEventListener("mouseup", e => {
             this.mouseDown = false;
+            this.mouseUp = true;
         })
 
         this.canvas.addEventListener("click", e => {
@@ -1992,6 +1886,9 @@ class Canv {
             if(this.clicked) {
                 this.clicked = false;
             }
+            if(this.mouseUp) {
+                this.mouseUp = false;
+            }
 
             requestAnimationFrame(this.$loop.bind(this));
         }
@@ -2045,7 +1942,7 @@ class Canv {
         }
     }
 
-    keyframe(config) {
+    animate(config) {
         this.keyframeStart = true;
         return new Promise((resolve, reject) => {
             setTimeout(() => {
@@ -2173,6 +2070,10 @@ class Canv {
         if (n) {
             n.render(this);
         }
+    }
+
+    static randomFloat(min, max) {
+        return (Math.random() * (max - min) + min).toFixed(4);
     }
 
     static random(min, max) {

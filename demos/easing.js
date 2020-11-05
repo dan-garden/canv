@@ -36,8 +36,8 @@ const app = new Canv('canvas', {
         this.keyframeIndex = newIndex;
         const easeKey = Object.keys(this.$easingFns)[this.keyframeIndex];
         this.current.string = easeKey;
-        this.keyframe(this.circle.pos, { x: this.width - (this.margin / 2) }, this.speed, "linear");
-        await this.keyframe(this.circle, { y: (this.margin / 2) }, this.speed, easeKey);
+        this.animate(this.circle.pos, { x: this.width - (this.margin / 2) }, this.speed, "linear");
+        await this.animate(this.circle, { y: (this.margin / 2) }, this.speed, easeKey);
         this.resetEase();
         await this.nextKeyframe();
     },

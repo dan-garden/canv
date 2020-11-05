@@ -98,12 +98,12 @@ const app = new Canv('canvas', {
         const ease = this.ease === "random" ? this.getRandomTransition() : this.ease;
         if (ease === "fade") {
             slide.x = 0;
-            await this.keyframe(slide, {
+            await this.animate(slide, {
                 opacity: 1
             }, this.easeTiming, "linear");
         } else {
             slide.opacity = 1;
-            await this.keyframe(slide, {
+            await this.animate(slide, {
                 x: 0
             }, this.easeTiming, ease);
         }

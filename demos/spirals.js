@@ -14,18 +14,14 @@ const app = new Canv('canvas', {
         this.background = 0;
     },
 
-    randomFloat(min, max) {
-        return (Math.random() * (max - min) + min).toFixed(4);
-    },
-
     async moveToNextAngle() {
         this.point.size = this.size;
         this.angle += this.angleInc;
         const pos = new Vector(this.halfWidth() + (this.radius*Math.sin(this.angle)), this.halfHeight() + (this.radius*Math.cos(this.angle)));
-        await this.keyframe(this.point.pos, pos, this.speed, this.ease);
+        await this.animate(this.point.pos, pos, this.speed, this.ease);
         // this.point.color = new Color(255)
         this.point.color = Color.random();
-        // this.keyframe(this.point.color, Color.random(), this.speed, this.ease);
+        // this.animate(this.point.color, Color.random(), this.speed, this.ease);
         await this.moveToNextAngle();
     },
 

@@ -16,10 +16,10 @@ const app = new Canv('canvas', {
 
     async keyframes() {
         console.log(this.easing);
-        this.keyframe(this.gate.topLeft, {x: -this.halfWidth(), y: -this.halfHeight()}, this.timing, this.easing);
-        this.keyframe(this.gate.topRight, {x: this.width, y: -this.halfHeight()}, this.timing, this.easing);
-        this.keyframe(this.gate.botLeft, {x: -this.halfWidth(), y: this.height}, this.timing, this.easing);
-        this.keyframe(this.gate.botRight, {x: this.width, y: this.height}, this.timing, this.easing);
+        this.animate(this.gate.topLeft, {x: -this.halfWidth(), y: -this.halfHeight()}, this.timing, this.easing);
+        this.animate(this.gate.topRight, {x: this.width, y: -this.halfHeight()}, this.timing, this.easing);
+        this.animate(this.gate.botLeft, {x: -this.halfWidth(), y: this.height}, this.timing, this.easing);
+        this.animate(this.gate.botRight, {x: this.width, y: this.height}, this.timing, this.easing);
     },
 
     draw() {

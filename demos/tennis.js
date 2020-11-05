@@ -66,10 +66,10 @@ const app = new Canv('canvas', {
     },
 
     hitBall() {
-        this.keyframe(this, {
+        this.animate(this, {
             ballHeight: 10
         }, 1000, "outSine", () => {
-            this.keyframe(this, {
+            this.animate(this, {
                 ballHeight: 0
             }, 2000, "outBounce", () => {})
         })

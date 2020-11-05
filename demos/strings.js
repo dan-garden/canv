@@ -14,7 +14,7 @@ const app = new Canv('canvas', {
         this.xCount = 10;
 
         
-        this.keyframe(this, {topW: -this.width}, 3000, "outElastic");
+        this.animate(this, {topW: -this.width}, 3000, "outElastic");
     },
 
     update() {

@@ -12,6 +12,7 @@ const app = new Canv('canvas', {
         const startPoint = new Vector(startX, startY);
         const startSize = Canv.random(30, 40);
         const anchorPuff = new Circle(startPoint.x, startPoint.y, startSize).setColor(this.cloudColor);
+        anchorPuff.opacity = Canv.randomFloat(0, 0.3);
 
         const puffs = {anchor: anchorPuff, puffs: new ShapeGroup};
 
@@ -19,6 +20,7 @@ const app = new Canv('canvas', {
             const size = Canv.random(startSize * 0.3, startSize * 0.8);
             const point = new Vector(startPoint.x + Canv.random(-(size * 1.5), (size * 1.5)), startPoint.y + Canv.random(-(size * 1.5), (size * 1.5)));
             const puff = new Circle(point.x, point.y, size).setColor(new Color(this.cloudColor).shade(Canv.random(-10, 10)));
+            puff.opacity = Canv.randomFloat(0, 0.3);
             puffs.puffs.add(puff);
         }
 
