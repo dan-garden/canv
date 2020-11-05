@@ -1,7 +1,6 @@
 const app = new Canv('canvas', {
     setup() {
         this.selection = false;
-        this.selecting = false;
     },
 
     update() {
@@ -12,7 +11,20 @@ const app = new Canv('canvas', {
 
             if(this.firstPoint) {
                 this.points = [this.firstPoint, new Vector(this.mouseX, this.mouseY)];
+
+                this.selection = new Rect(
+                    this.points[0].x,
+                    this.points[0].y,
+                    this.points[1].x - this.points[0].x,
+                    this.points[1].y - this.points[0].y
+                );
+
+                this.selection.setColor();
             }
+        } else {
+            this.selection = false;
+            this.points = false;
+            this.firstPoint = false;
         }
     },
 
