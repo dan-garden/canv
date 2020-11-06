@@ -1,38 +1,38 @@
 //Element getters and setters (for keyframes)
-HTMLElement.prototype.__defineGetter__("top", function() {
+HTMLElement.prototype.__defineGetter__("top", function () {
     return parseInt(this.style.top.replace("px", ""));
 });
-HTMLElement.prototype.__defineSetter__("top", function(val) {
+HTMLElement.prototype.__defineSetter__("top", function (val) {
     return this.style.top = val + "px";
 });
-HTMLElement.prototype.__defineGetter__("left", function() {
+HTMLElement.prototype.__defineGetter__("left", function () {
     return parseInt(this.style.left.replace("px", ""));
 });
-HTMLElement.prototype.__defineSetter__("left", function(val) {
+HTMLElement.prototype.__defineSetter__("left", function (val) {
     return this.style.left = val + "px";
 });
-HTMLElement.prototype.__defineGetter__("right", function() {
+HTMLElement.prototype.__defineGetter__("right", function () {
     return parseInt(this.style.right.replace("px", ""));
 });
-HTMLElement.prototype.__defineSetter__("right", function(val) {
+HTMLElement.prototype.__defineSetter__("right", function (val) {
     return this.style.right = val + "px";
 });
-HTMLElement.prototype.__defineGetter__("bottom", function() {
+HTMLElement.prototype.__defineGetter__("bottom", function () {
     return parseInt(this.style.bottom.replace("px", ""));
 });
-HTMLElement.prototype.__defineSetter__("bottom", function(val) {
+HTMLElement.prototype.__defineSetter__("bottom", function (val) {
     return this.style.bottom = val + "px";
 });
-HTMLElement.prototype.__defineGetter__("width", function() {
+HTMLElement.prototype.__defineGetter__("width", function () {
     return parseInt(this.style.width.replace("px", ""));
 });
-HTMLElement.prototype.__defineSetter__("width", function(val) {
+HTMLElement.prototype.__defineSetter__("width", function (val) {
     return this.style.width = val + "px";
 });
-HTMLElement.prototype.__defineGetter__("height", function() {
+HTMLElement.prototype.__defineGetter__("height", function () {
     return parseInt(this.style.height.replace("px", ""));
 });
-HTMLElement.prototype.__defineSetter__("height", function(val) {
+HTMLElement.prototype.__defineSetter__("height", function (val) {
     return this.style.height = val + "px";
 });
 
@@ -553,22 +553,25 @@ class Shape {
     }
 
     static centroid(pts) {
-        var first = pts[0], last = pts[pts.length-1];
+        var first = pts[0],
+            last = pts[pts.length - 1];
         if (first.x != last.x || first.y != last.y) pts.push(first);
-        var twicearea=0,
-        x=0, y=0,
-        nPts = pts.length,
-        p1, p2, f;
-        for ( var i=0, j=nPts-1 ; i<nPts ; j=i++ ) {
-           p1 = pts[i]; p2 = pts[j];
-           f = p1.x*p2.y - p2.x*p1.y;
-           twicearea += f;          
-           x += ( p1.x + p2.x ) * f;
-           y += ( p1.y + p2.y ) * f;
+        var twicearea = 0,
+            x = 0,
+            y = 0,
+            nPts = pts.length,
+            p1, p2, f;
+        for (var i = 0, j = nPts - 1; i < nPts; j = i++) {
+            p1 = pts[i];
+            p2 = pts[j];
+            f = p1.x * p2.y - p2.x * p1.y;
+            twicearea += f;
+            x += (p1.x + p2.x) * f;
+            y += (p1.y + p2.y) * f;
         }
         f = twicearea * 3;
-        return new Vector(x/f, y/f);
-     }
+        return new Vector(x / f, y / f);
+    }
 
     addEventListener(type, fn) {
         this.$events.register(type, fn);
@@ -652,12 +655,12 @@ class ShapeGroup {
     }
 
     setPivot(x, y) {
-        if(x instanceof Vector) {
+        if (x instanceof Vector) {
             this.$oldPos = x.clone();
             this.$pos = x.clone();
         } else {
             this.$oldPos = new Vector(x, y);
-            this.$pos = new Vector(x, y);    
+            this.$pos = new Vector(x, y);
         }
         return this;
     }
@@ -670,7 +673,7 @@ class ShapeGroup {
     set x(n) {
         const offset = this.$oldPos.x - this.$pos.x;
         this.forEach(shape => {
-            if(shape instanceof Triangle) {
+            if (shape instanceof Triangle) {
                 shape.x1 -= offset;
                 shape.x2 -= offset;
                 shape.x3 -= offset;
@@ -690,7 +693,7 @@ class ShapeGroup {
     set y(n) {
         const offset = this.$oldPos.y - this.$pos.y;
         this.forEach(shape => {
-            if(shape instanceof Triangle) {
+            if (shape instanceof Triangle) {
                 shape.y1 -= offset;
                 shape.y2 -= offset;
                 shape.y3 -= offset;
@@ -768,15 +771,15 @@ class ShapeGroup {
     }
 
     get center() {
-        if(this.length === 0) {
+        if (this.length === 0) {
             return new Vector(0, 0);
-        } else if(this.length === 1) {
+        } else if (this.length === 1) {
             return this.shapes[0].center;
-        } else if(this.length === 2) {
+        } else if (this.length === 2) {
             const shape1 = this.shapes[0].center;
             const shape2 = this.shapes[1].center;
             return new Vector((shape1.x + shape2.x) / 2, (shape1.y + shape2.y) / 2);
-        } else if(this.length > 2) {
+        } else if (this.length > 2) {
             const centerPoints = [];
             this.shapes.forEach(shape => {
                 centerPoints.push(shape.center);
@@ -1142,6 +1145,28 @@ class Rect extends Shape {
         }
     }
 
+    get x2() {
+        return this.x + this.width;
+    }
+
+    get y2() {
+        return this.y + this.height;
+    }
+
+    intersects(rectB) {
+        var intersectTop    = Math.max(this.y,    rectB.y);
+        var intersectRight  = Math.min(this.x2, rectB.x2);
+        var intersectBottom = Math.min(this.y2, rectB.y2);
+        var intersectLeft   = Math.max(this.x,    rectB.x);
+    
+        var intersectWidth  = intersectRight - intersectLeft;
+        var intersectHeight = intersectBottom - intersectTop;
+    
+        if (intersectWidth > 0 && intersectHeight > 0) {
+            return new Rect(intersectLeft, intersectTop, intersectWidth, intersectHeight);
+        }
+    }
+
     contains(x, y) {
         return (x > this.x && x < this.x + this.width && y > this.y && y < this.y + this.height);
     }
@@ -1216,7 +1241,7 @@ class Triangle extends Shape {
     get x1() {
         return this.x;
     }
-    
+
     set x1(n) {
         this.x = n;
     }
@@ -1234,7 +1259,7 @@ class Triangle extends Shape {
     }
 
     get center() {
-        return Shape.centroid([ 
+        return Shape.centroid([
             new Vector(this.x1, this.y1),
             new Vector(this.x2, this.y2),
             new Vector(this.x3, this.y3),
@@ -1883,10 +1908,10 @@ class Canv {
                 if (this.$draw) this.$draw(this.frames, timestamp);
             }
 
-            if(this.clicked) {
+            if (this.clicked) {
                 this.clicked = false;
             }
-            if(this.mouseUp) {
+            if (this.mouseUp) {
                 this.mouseUp = false;
             }
 
@@ -1925,7 +1950,7 @@ class Canv {
                         this.kf_keyFramesList.splice(config.index, 1);
                     }
 
-                    if(typeof config.shape.kf_resolve === "function") {
+                    if (typeof config.shape.kf_resolve === "function") {
                         config.shape.kf_resolve();
                     }
                 });
@@ -1947,7 +1972,7 @@ class Canv {
         return new Promise((resolve, reject) => {
             setTimeout(() => {
 
-                if(arguments.length > 1) {
+                if (arguments.length > 1) {
                     config.shape = arguments[0];
                     config.vals = arguments[1];
                     config.duration = arguments[2];
@@ -2170,7 +2195,7 @@ class Canv {
     get randomHeight() {
         return Canv.random(0, this.height);
     }
-    
+
     get height() {
         return this.canvas.height
     }
