@@ -154,6 +154,38 @@ class Color {
         )
     }
 
+    static get white() {
+        return new Color(255);
+    }
+
+    static get black() {
+        return new Color(0);
+    }
+
+    static get red() {
+        return new Color(255, 0, 0);
+    }
+
+    static get green() {
+        return new Color(0, 255, 0);
+    }
+
+    static get blue() {
+        return new Color(0, 0, 255);
+    }
+
+    static get yellow() {
+        return new Color(255, 255, 0);
+    }
+
+    static get cyan() {
+        return new Color(0, 255, 255);
+    }
+
+    static get magenta() {
+        return new Color(255, 0, 255);
+    }
+
     constructor() {
         if (arguments.length === 0) {
             this.r = 0;
@@ -1841,7 +1873,7 @@ class Canv {
     resizeHandler() {
         if (this.fullscreen) {
             this.width = window.innerWidth;
-            this.height = window.innerHeight;
+            this.height = window.innerHeight - 2.8;
         }
     }
 

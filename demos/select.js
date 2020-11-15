@@ -15,7 +15,7 @@ const app = new Canv('canvas', {
         }
     },
 
-    update() {
+    updateSelection() {
         if(this.mouseDown) {
             if(!this.firstPoint) {
                 this.firstPoint = new Vector(this.mouseX, this.mouseY);
@@ -51,17 +51,36 @@ const app = new Canv('canvas', {
                 .setStroke(this.color, 1);
             }
         } else {
-            this.selection = false;
-            this.points = false;
-            this.firstPoint = false;
+            if(this.selection) {
+                this.selection.shown = false;
+                this.firstPoint = false;
+            }
         }
-
     },
 
-    draw() {
-        this.background = 0;
+    addSelection() {
         if(this.selection) {
             this.add(this.selection);
         }
+    },
+
+    update() {
+        this.updateSelection();
+
+        if(this.selection) {
+            this.rects.forEach(rect => {
+                if(rect.intersects(this.selection)) {
+                    rect.color = Color.green;
+                } else {
+                    rect.color = Color.white;
+                }
+            })
+        }
+    },
+
+    draw() { 
+        this.clear();
+        // this.add(this.rects);
+        this.addSelection();
     }
 })
