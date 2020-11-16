@@ -2,7 +2,7 @@ const app = new Canv('canvas', {
     setup() {
         this.radius = 0;
         this.angle = 0;
-        this.radInc = 1;
+        this.radInc = 0.1;
         this.speed = 100;
         this.ease = "linear";
         this.size = 1;
