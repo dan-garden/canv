@@ -186,6 +186,184 @@ class Color {
         return new Color(255, 0, 255);
     }
 
+    static get names() {
+        return [
+            "white",
+            "red",
+            "orange",
+            "yellow",
+            "green",
+            "blue",
+            "purple",
+            "black",
+            "aliceblue",
+            "antiquewhite",
+            "aqua",
+            "aquamarine",
+            "azure",
+            "beige",
+            "bisque",
+            "blanchedalmond",
+            "blueviolet",
+            "brown",
+            "burlywood",
+            "cadetblue",
+            "chartreuse",
+            "chocolate",
+            "coral",
+            "cornflowerblue",
+            "cornsilk",
+            "crimson",
+            "cyan",
+            "darkblue",
+            "darkcyan",
+            "darkgoldenrod",
+            "darkgray",
+            "darkgreen",
+            "darkkhaki",
+            "darkmagenta",
+            "darkolivegreen",
+            "darkorange",
+            "darkorchid",
+            "darkred",
+            "darksalmon",
+            "darkseagreen",
+            "darkslateblue",
+            "darkslategray",
+            "darkturquoise",
+            "darkviolet",
+            "deeppink",
+            "deepskyblue",
+            "dimgray",
+            "dodgerblue",
+            "firebrick",
+            "floralwhite",
+            "forestgreen",
+            "fuschia",
+            "gainsboro",
+            "ghostwhite",
+            "gold",
+            "goldenrod",
+            "gray",
+            "greenyellow",
+            "honeydew",
+            "hotpink",
+            "indianred",
+            "indigo",
+            "ivory",
+            "khaki",
+            "lavender",
+            "lavenderblush",
+            "lemonchiffon",
+            "lightblue",
+            "lightcoral",
+            "lightcyan",
+            "lightgoldenrodyellow",
+            "lightgreen",
+            "lightgrey",
+            "lightpink",
+            "lightsalmon",
+            "lightseagreen",
+            "lightskyblue",
+            "lightslategray",
+            "lightsteelblue",
+            "lightyellow",
+            "lime",
+            "limegreen",
+            "linen",
+            "magenta",
+            "maroon",
+            "mediumaquamarine",
+            "mediumblue",
+            "mediumorchid",
+            "mediumpurple",
+            "mediumseagreen",
+            "mediumslateblue",
+            "mediumspringgreen",
+            "mediumturquoise",
+            "mediumvioletred",
+            "midnightblue",
+            "mintcream",
+            "mistyrose",
+            "navajowhite",
+            "navy",
+            "oldlace",
+            "olive",
+            "olivedrab",
+            "orangered",
+            "orchid",
+            "palegoldenrod",
+            "palegreen",
+            "paleturquoise",
+            "palevioletred",
+            "papayawhip",
+            "peachpuff",
+            "peru",
+            "pink",
+            "plum",
+            "powderblue",
+            "rosybrown",
+            "royalblue",
+            "saddlebrown",
+            "seagreen",
+            "seashell",
+            "sienna",
+            "silver",
+            "skyblue",
+            "slateblue",
+            "slategray",
+            "snow",
+            "springgreen",
+            "steelblue",
+            "tan",
+            "teal",
+            "thistle",
+            "tomato",
+            "turquoise",
+            "violet",
+            "wheat",
+            "whitesmoke",
+            "yellowgreen"
+        ];
+    }
+
+    get name() {
+        const names = Color.names;
+        const colors = names.map(n => {
+            const c = new Color(n);
+            c._name = n;
+            return c;
+        });
+        const pos = new Color(this.r, this.g, this.b),
+          minDist = colors.reduce((res, point, index) => {
+            let { r, g, b } = point;
+            const value = pos.dist(new Color(r, g, b));
+            return value < res.value ? { index, value } : res;
+          }, { index: -1, value: Number.MAX_VALUE });
+        return colors[minDist.index]._name;
+    }
+
+    static fromRandomRef(name, dist=20, maxCount=2, count=0) {
+        const names = Color.names;
+        if(names.indexOf(name) < 0) {
+            return Color.black;
+        } else if(count > maxCount) {
+            return new Color(name);
+        } else {
+            const color = new Color(name);
+            color.r += Canv.random(-dist, dist);
+            color.g += Canv.random(-dist, dist);
+            color.b += Canv.random(-dist, dist);
+
+            if(color.name === name) {
+                return color;
+            } else {
+                return Color.fromRandomRef(name, dist, maxCount, count+1);
+            }
+        }
+    }
+
+
     constructor() {
         if (arguments.length === 0) {
             this.r = 0;
@@ -234,6 +412,14 @@ class Color {
         return type == "rgba" ?
             `rgba(${this.r}, ${this.g}, ${this.b}, ${this.a})` :
             `rgb(${this.r}, ${this.g}, ${this.b})`
+    }
+
+    dist(color) {
+        return Math.sqrt(
+          Math.pow(this.r - color.r, 2) +
+          Math.pow(this.g - color.g, 2) +
+          Math.pow(this.b - color.b, 2)
+        );
     }
 
     componentToHex(c) {
@@ -343,6 +529,67 @@ class Color {
     }
 }
 
+class Palette {
+    constructor(colors=[]) {
+        this.colors = colors;
+        this.index = 0;
+    }
+
+    add(color) {
+        this.colors.push(color);
+    }
+
+    get current() {
+        return this.colors[this.index];
+    }
+
+    next() {
+        this.index = this.index === this.length - 1 ? 0 : this.index + 1;
+    }
+
+    static count(n) {
+        let p = new Palette();
+        for(let i = 0; i < n; i++) {
+            p.add(Color.random());
+        }
+
+        return p;
+    }
+
+    get average() {
+        const av = new Color(0, 0, 0);
+        this.colors.forEach(c => {
+            av.r += c.r;
+            av.g += c.g;
+            av.b += c.b;
+        })
+
+        av.r /= this.colors.length;
+        av.g /= this.colors.length;
+        av.b /= this.colors.length;
+
+        return av;
+    }
+
+    get length() {
+        return this.colors.length;
+    }
+
+    // static all() {
+    //     let p = new Palette();
+    //     let red, green, blue;
+
+    //     for (let red = 0; red <= 255; red++) {
+    //         for (let green = 0; green <= 255; green++) {
+    //             for (let blue = 0; blue <= 255; blue++) {
+    //                 p.add(new Color(red, green, blue));
+    //             }
+    //         }
+    //     }
+
+    //     return p;
+    // }
+}
 class Vector {
     constructor(x, y) {
         this.x = x;

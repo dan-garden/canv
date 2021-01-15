@@ -1,8 +1,14 @@
 const app = new Canv('canvas', {
+    width: window.innerWidth,
+    height: window.innerHeight - 4,
     async setup() {
-        this.margin = 100;
-        this.speed = 3000;
-        this.size = 5;
+        this.colors = [
+            Color.random(),
+            Color.random()
+        ];
+        this.margin = 200;
+        this.speed = 5000;
+        this.size = 10;
 
         this.keyframeIndex = -1;
         this.background = 0;
@@ -25,7 +31,7 @@ const app = new Canv('canvas', {
     resetEase() {
         this.circle.x = (this.margin / 2) + (this.circle.radius / 2);
         this.circle.y = this.height - (this.margin / 2) - (this.circle.radius / 2);
-        this.circle.color = new Color(255);
+        this.circle.color = Color.random();
         this.background = 0;
         this.addedText = false;
     },
@@ -36,6 +42,7 @@ const app = new Canv('canvas', {
         this.keyframeIndex = newIndex;
         const easeKey = Object.keys(this.$easingFns)[this.keyframeIndex];
         this.current.string = easeKey;
+        this.animate(this.circle.color, Color.random(), this.speed, easeKey)
         this.animate(this.circle.pos, { x: this.width - (this.margin / 2) }, this.speed, "linear");
         await this.animate(this.circle, { y: (this.margin / 2) }, this.speed, easeKey);
         this.resetEase();
