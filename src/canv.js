@@ -186,6 +186,14 @@ class Color {
         return new Color(255, 0, 255);
     }
 
+    static get orange() {
+        return new Color(255, 165, 0);
+    }
+
+    static get purple() {
+        return new Color(128, 0, 128, 1);
+    }
+
     static get names() {
         return [
             "white",
@@ -1413,8 +1421,16 @@ class Rect extends Shape {
             }
 
             if (this.showFill) {
-                canv.ctx.fillStyle = this.color.toString();
-                canv.ctx.fillRect(this.x, this.y, this.width, this.height);
+                if(this.color instanceof Gradient) {
+                    this.color.x = this.x;
+                    this.color.y = this.y;
+                    this.color.width = this.width;
+                    this.color.height = this.height;
+                    this.color.render(canv);
+                } else {
+                    canv.ctx.fillStyle = this.color.toString();
+                    canv.ctx.fillRect(this.x, this.y, this.width, this.height);
+                }
             }
             canv.ctx.closePath();
             canv.ctx.restore();
@@ -1448,6 +1464,94 @@ class Rect extends Shape {
 
     contains(x, y) {
         return (x > this.x && x < this.x + this.width && y > this.y && y < this.y + this.height);
+    }
+}
+
+class Gradient extends Rect {
+    constructor(colors, x=0, y=0, width=100, height=100, dir="linear") {
+        super(x, y, width, height);
+        this.dir = dir;
+        this.colors = colors || [Color.white, Color.black];
+        this.temp = new Line;
+        this.count = this.height / 1;
+    }
+
+    set point(n) {
+        this.$point = n;
+    }
+
+    get point() {
+        return this.$point;
+    }
+
+    render(canv) {
+        const point = this.$point ||  new Vector(this.pos.x + (this.width / 2), this.pos.y + (this.height / 2));
+        this.count = this.height * 2;
+        let len = 0;
+        if(this.dir === "linear") {
+            len = this.colors.length;
+        } else if(this.dir === "round") {
+            len = 4;
+        }
+        const count = this.count / len;
+        const dist = new Vector(
+            this.width/(count-1),
+            this.height/(count-1)
+        );
+        let cur = 0;
+        for(let j = 0; j < len; j++) {
+            for(let i = 0; i < count; i++) {
+                if(this.dir === "linear") {
+                    const chunk = this.height / len;
+                    const sep_chunk = chunk / count;
+                    const y = this.pos.y + (chunk * j) + (sep_chunk * i);
+                    this.temp.x1 = this.pos.x;
+                    this.temp.y1 = y;
+                    this.temp.x2 = this.pos.x + this.width;
+                    this.temp.y2 = y;
+                } else if(this.dir === "round") {
+                    if(j === 0) {
+                        this.temp.x1 = this.pos.x + (dist.x * i);
+                        this.temp.y1 = this.pos.y;
+                    } else if(j === 1) {
+                        this.temp.x1 = this.pos.x + this.width;
+                        this.temp.y1 = this.pos.y + (dist.y * i);
+                    } else if(j === 2) {
+                        this.temp.x1 = this.pos.x + (this.width - dist.x * i);
+                        this.temp.y1 = this.pos.y + this.height;
+                    } else if(j === 3) {
+                        this.temp.x1 = this.pos.x;
+                        this.temp.y1 = this.pos.y + (this.height - dist.y * i);
+                    }
+                    
+                    this.temp.x2 = point.x;
+                    this.temp.y2 = point.y;
+                }
+                 
+                let f,t,r,g,b;
+                if(this.dir === "linear") {
+                    const div = (this.colors.length-1) / 2;
+                    const fromIndex = Math.round(j < div / 2 ? j : j-1);
+                    const toIndex = Math.round(j >= div / 2 ? j : j+1);
+                    f = this.colors[fromIndex];
+                    t = this.colors[toIndex];
+                    r = canv.map(cur, 0, this.count-1, f.r, t.r);
+                    g = canv.map(cur, 0, this.count-1, f.g, t.g);
+                    b = canv.map(cur, 0, this.count-1, f.b, t.b);
+
+                } else if(this.dir === "round") {
+                    f = this.colors[j];
+                    t = this.colors[j >= this.colors.length-1 ? 0 : j+1];
+                    r = canv.map(i, 0, count, f.r, t.r);
+                    g = canv.map(i, 0, count, f.g, t.g);
+                    b = canv.map(i, 0, count, f.b, t.b);
+                }
+                const color = new Color(r, g, b);
+                this.temp.setColor(color);
+                canv.add(this.temp);
+                cur++;
+            }
+        }
     }
 }
 
