@@ -1467,6 +1467,34 @@ class Rect extends Shape {
     }
 }
 
+class Widget extends Rect {
+    constructor(config={}) {
+        super(config.x=0, config.y=0, config.width=100, config.height=100);
+        this.$render = false;
+        this.$update = false;
+
+        if(config.update && typeof config.update === "function") {
+            this.$update = config.update.bind(this);
+        }
+
+        if(config.draw && typeof config.draw === "function") {
+            this.$draw = config.draw.bind(this);
+        }
+    }
+
+    update() {
+        if(this.$update) {
+            this.$update();
+        }
+    }
+
+    render(canv) {
+        if(this.$draw) {
+            this.$draw(canv);
+        }
+    }
+}
+
 class Gradient extends Rect {
     constructor(colors, x=0, y=0, width=100, height=100, dir="linear") {
         super(x, y, width, height);
@@ -1499,6 +1527,7 @@ class Gradient extends Rect {
             this.height/(count-1)
         );
         let cur = 0;
+
         for(let j = 0; j < len; j++) {
             for(let i = 0; i < count; i++) {
                 if(this.dir === "linear") {
@@ -1530,6 +1559,7 @@ class Gradient extends Rect {
                  
                 let f,t,r,g,b;
                 if(this.dir === "linear") {
+
                     const div = (this.colors.length-1) / 2;
                     const fromIndex = Math.round(j < div / 2 ? j : j-1);
                     const toIndex = Math.round(j >= div / 2 ? j : j+1);
@@ -1538,6 +1568,8 @@ class Gradient extends Rect {
                     r = canv.map(cur, 0, this.count-1, f.r, t.r);
                     g = canv.map(cur, 0, this.count-1, f.g, t.g);
                     b = canv.map(cur, 0, this.count-1, f.b, t.b);
+
+                    
 
                 } else if(this.dir === "round") {
                     f = this.colors[j];
