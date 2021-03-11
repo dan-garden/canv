@@ -37,6 +37,92 @@ HTMLElement.prototype.__defineSetter__("height", function (val) {
 });
 
 
+class Microphone {
+    constructor(_fft, canv) {
+        this.FFT_SIZE = _fft || 1024;
+        this.spectrum = [];
+        this.canv = canv;
+        this.volume = this.vol = 1;
+        this.peak_volume = 0;
+        this.audioContext = new AudioContext();
+        this.SAMPLE_RATE = this.audioContext.sampleRate;
+
+        // this is just a browser check to see
+        // if it supports AudioContext and getUserMedia
+        window.AudioContext = window.AudioContext || window.webkitAudioContext;
+        navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia;
+        // now just wait until the microphone is fired up
+        this.init();
+    }
+
+    init() {
+        try {
+            this.context = new AudioContext();
+            this.startMic();
+        } catch (e) {
+            console.error(e);
+            alert('Web Audio API is not supported in this browser');
+        }
+    }
+
+    processSound(stream) {
+        // analyser extracts frequency, waveform, etc.
+        var analyser = this.context.createAnalyser();
+        analyser.smoothingTimeConstant = 0.2;
+        analyser.fftSize = this.FFT_SIZE;
+        var node = this.context.createScriptProcessor(this.FFT_SIZE * 2, 1, 1);
+        node.onaudioprocess = () => {
+
+            // bitcount returns array which is half the FFT_SIZE
+            this.spectrum = new Uint8Array(analyser.frequencyBinCount);
+            // getByteFrequencyData returns amplitude for each bin
+            analyser.getByteFrequencyData(this.spectrum);
+            // getByteTimeDomainData gets volumes over the sample time
+            // analyser.getByteTimeDomainData(this.spectrum);
+
+            this.vol = this.getRMS();
+            // get peak - a hack when our volumes are low
+            if (this.vol > this.peak_volume) this.peak_volume = this.vol;
+            this.volume = this.vol;
+        };
+        var input = this.context.createMediaStreamSource(stream);
+        input.connect(analyser);
+        analyser.connect(node);
+        node.connect(this.context.destination);
+    }
+
+    startMic() {
+        navigator.getUserMedia({
+            audio: true
+        }, this.processSound.bind(this), console.error);
+    }
+
+    mapSound(_me, _total, _min, _max) {
+        if (this.spectrum.length > 0) {
+            // map to defaults if no values given
+            var min = _min || 0;
+            var max = _max || 100;
+            //actual new freq
+            var new_freq = Math.floor(_me * this.spectrum.length / _total);
+            // map the volumes to a useful number
+            return this.canv.map(this.spectrum[new_freq], 0, this.peak_volume, min, max);
+        } else {
+            return 0;
+        }
+    }
+
+    getRMS() {
+        var rms = 0;
+        for (var i = 0; i < 1; i++) {
+            rms += this.spectrum[i] * this.spectrum[i];
+        }
+        rms /= this.spectrum.length;
+        rms = Math.sqrt(rms);
+        return rms;
+    }
+}
+
+
 class ActionRecorder {
     constructor() {
         this.actions = [];
@@ -130,6 +216,110 @@ class Color {
             parseInt(result[2], 16),
             parseInt(result[3], 16)
         ) : undefined;
+    }
+
+    static fromHSV(h, s, v) {
+        var r, g, b;
+        var i;
+        var f, p, q, t;
+
+        // Make sure our arguments stay in-range
+        h = Math.max(0, Math.min(360, h));
+        s = Math.max(0, Math.min(100, s));
+        v = Math.max(0, Math.min(100, v));
+
+        // We accept saturation and value arguments from 0 to 100 because that's
+        // how Photoshop represents those values. Internally, however, the
+        // saturation and value are calculated from a range of 0 to 1. We make
+        // That conversion here.
+        s /= 100;
+        v /= 100;
+
+        if (s == 0) {
+            // Achromatic (grey)
+            r = g = b = v;
+            return new Color(
+                Math.round(r * 255),
+                Math.round(g * 255),
+                Math.round(b * 255)
+            );
+        }
+
+        h /= 60; // sector 0 to 5
+        i = Math.floor(h);
+        f = h - i; // factorial part of h
+        p = v * (1 - s);
+        q = v * (1 - s * f);
+        t = v * (1 - s * (1 - f));
+
+        switch (i) {
+            case 0:
+                r = v;
+                g = t;
+                b = p;
+                break;
+
+            case 1:
+                r = q;
+                g = v;
+                b = p;
+                break;
+
+            case 2:
+                r = p;
+                g = v;
+                b = t;
+                break;
+
+            case 3:
+                r = p;
+                g = q;
+                b = v;
+                break;
+
+            case 4:
+                r = t;
+                g = p;
+                b = v;
+                break;
+
+            default: // case 5:
+                r = v;
+                g = p;
+                b = q;
+        }
+
+        return new Color(
+            Math.round(r * 255),
+            Math.round(g * 255),
+            Math.round(b * 255)
+        );
+    }
+
+    static fromHSL(h, s, l) {
+        var r, g, b;
+
+        if (s == 0) {
+            r = g = b = l; // achromatic
+        } else {
+            function hue2rgb(p, q, t) {
+                if (t < 0) t += 1;
+                if (t > 1) t -= 1;
+                if (t < 1 / 6) return p + (q - p) * 6 * t;
+                if (t < 1 / 2) return q;
+                if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+                return p;
+            }
+
+            var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+            var p = 2 * l - q;
+
+            r = hue2rgb(p, q, h + 1 / 3);
+            g = hue2rgb(p, q, h);
+            b = hue2rgb(p, q, h - 1 / 3);
+        }
+
+        return new Color(r * 255, g * 255, b * 255);
     }
 
     static fromRef(ref) {
@@ -343,19 +533,29 @@ class Color {
             return c;
         });
         const pos = new Color(this.r, this.g, this.b),
-          minDist = colors.reduce((res, point, index) => {
-            let { r, g, b } = point;
-            const value = pos.dist(new Color(r, g, b));
-            return value < res.value ? { index, value } : res;
-          }, { index: -1, value: Number.MAX_VALUE });
+            minDist = colors.reduce((res, point, index) => {
+                let {
+                    r,
+                    g,
+                    b
+                } = point;
+                const value = pos.dist(new Color(r, g, b));
+                return value < res.value ? {
+                    index,
+                    value
+                } : res;
+            }, {
+                index: -1,
+                value: Number.MAX_VALUE
+            });
         return colors[minDist.index]._name;
     }
 
-    static fromRandomRef(name, dist=20, maxCount=2, count=0) {
+    static fromRandomRef(name, dist = 20, maxCount = 2, count = 0) {
         const names = Color.names;
-        if(names.indexOf(name) < 0) {
+        if (names.indexOf(name) < 0) {
             return Color.black;
-        } else if(count > maxCount) {
+        } else if (count > maxCount) {
             return new Color(name);
         } else {
             const color = new Color(name);
@@ -363,10 +563,10 @@ class Color {
             color.g += Canv.random(-dist, dist);
             color.b += Canv.random(-dist, dist);
 
-            if(color.name === name) {
+            if (color.name === name) {
                 return color;
             } else {
-                return Color.fromRandomRef(name, dist, maxCount, count+1);
+                return Color.fromRandomRef(name, dist, maxCount, count + 1);
             }
         }
     }
@@ -424,9 +624,9 @@ class Color {
 
     dist(color) {
         return Math.sqrt(
-          Math.pow(this.r - color.r, 2) +
-          Math.pow(this.g - color.g, 2) +
-          Math.pow(this.b - color.b, 2)
+            Math.pow(this.r - color.r, 2) +
+            Math.pow(this.g - color.g, 2) +
+            Math.pow(this.b - color.b, 2)
         );
     }
 
@@ -538,7 +738,7 @@ class Color {
 }
 
 class Palette {
-    constructor(colors=[]) {
+    constructor(colors = []) {
         this.colors = colors;
         this.index = 0;
     }
@@ -557,7 +757,7 @@ class Palette {
 
     static count(n) {
         let p = new Palette();
-        for(let i = 0; i < n; i++) {
+        for (let i = 0; i < n; i++) {
             p.add(Color.random());
         }
 
@@ -919,13 +1119,15 @@ class Shape {
 class ShapeGroup {
     constructor(shapes = []) {
         Object.keys(shapes).forEach(shapeKey => {
+            if (typeof shapes[shapeKey] === "function") {
+                shapes[shapeKey].bind(this);
+            }
+
             this[shapeKey] = shapes[shapeKey];
         })
 
-        this.$oldPos = new Vector();
-        this.$pos = new Vector();
         this.shapes = Object.values(shapes);
-        this.updatePivot();
+        //this.updatePivot();
     }
 
     setColor(x) {
@@ -941,71 +1143,12 @@ class ShapeGroup {
         this.forEach(shape => shape.stroke = x);
     }
 
-    setPivot(x, y) {
-        if (x instanceof Vector) {
-            this.$oldPos = x.clone();
-            this.$pos = x.clone();
-        } else {
-            this.$oldPos = new Vector(x, y);
-            this.$pos = new Vector(x, y);
-        }
-        return this;
-    }
-
-    updatePivot() {
-        const center = this.center;
-        this.setPivot(center.x, center.y);
-    }
-
-    set x(n) {
-        const offset = this.$oldPos.x - this.$pos.x;
-        this.forEach(shape => {
-            if (shape instanceof Triangle) {
-                shape.x1 -= offset;
-                shape.x2 -= offset;
-                shape.x3 -= offset;
-            } else {
-                shape.x -= offset;
-            }
-        })
-
-        this.$oldPos.x = this.$pos.x;
-        this.$pos.x = n;
-    }
-
-    get x() {
-        return this.$pos.x;
-    }
-
-    set y(n) {
-        const offset = this.$oldPos.y - this.$pos.y;
-        this.forEach(shape => {
-            if (shape instanceof Triangle) {
-                shape.y1 -= offset;
-                shape.y2 -= offset;
-                shape.y3 -= offset;
-            } else {
-                shape.y -= offset;
-            }
-        })
-
-        this.$oldPos.y = this.$pos.y;
-        this.$pos.y = n;
-    }
-
-    get y() {
-        return this.$pos.y;
-    }
-
-
-
     remove(i) {
         if (this[i]) {
             delete this[i];
         }
 
         this.shapes.splice(i, 1);
-        this.updatePivot();
         return this;
     }
 
@@ -1040,58 +1183,61 @@ class ShapeGroup {
     }
 
     noStroke() {
-        this.forEach(shape => shape.noStroke());
+        this.forEach(shape => {
+            shape = typeof shape === "function" ? shape() : shape;
+            shape.noStroke()
+        });
     }
 
     noFill() {
-        this.forEach(shape => shape.noFill());
+        this.forEach(shape => {
+            shape = typeof shape === "function" ? shape() : shape;
+            shape.noFill()
+        });
     }
 
     render(canv) {
-        this.forEach(shape => shape.render(canv));
+        this.forEach(shape => {
+            shape = typeof shape === "function" ? shape() : shape;
+
+            if (shape.render) {
+                shape.render(canv);
+            }
+        });
     }
 
     contains(x, y) {
         return Object.values(this.shapes).map(shape => {
+            shape = typeof shape === "function" ? shape() : shape;
             return shape.contains ? shape.contains(x, y) : false
         }).some(contains => contains == true);
     }
 
-    get center() {
-        if (this.length === 0) {
-            return new Vector(0, 0);
-        } else if (this.length === 1) {
-            return this.shapes[0].center;
-        } else if (this.length === 2) {
-            const shape1 = this.shapes[0].center;
-            const shape2 = this.shapes[1].center;
-            return new Vector((shape1.x + shape2.x) / 2, (shape1.y + shape2.y) / 2);
-        } else if (this.length > 2) {
-            const centerPoints = [];
-            this.shapes.forEach(shape => {
-                centerPoints.push(shape.center);
-            });
-            return Shape.centroid(centerPoints);
-        }
+    intersects(s) {
+        return Object.values(this.shapes).map(shape => {
+            return shape.intersects ? shape.intersects(s) : false
+        }).some(intersects => intersects == true);
     }
 
     add(n, i) {
         if (typeof n === "string" && typeof i === "object") {
+            if (typeof i === "function") {
+                i.bind(this);
+            }
             this[n] = i;
             this.shapes.unshift(i);
         } else {
+            if (typeof n === "function") {
+                n.bind(this);
+            }
             this.shapes.unshift(n);
         }
 
-        const center = this.center;
-        this.setPivot(center.x, center.y);
         return this;
     }
 
     clear() {
         this.shapes = [];
-        const center = this.center;
-        this.setPivot(center.x, center.y);
         return this;
     }
 
@@ -1421,7 +1567,7 @@ class Rect extends Shape {
             }
 
             if (this.showFill) {
-                if(this.color instanceof Gradient) {
+                if (this.color instanceof Gradient) {
                     this.color.x = this.x;
                     this.color.y = this.y;
                     this.color.width = this.width;
@@ -1448,17 +1594,23 @@ class Rect extends Shape {
         return this.y + this.height;
     }
 
-    intersects(rectB) {
-        var intersectTop    = Math.max(this.y,    rectB.y);
-        var intersectRight  = Math.min(this.x2, rectB.x2);
-        var intersectBottom = Math.min(this.y2, rectB.y2);
-        var intersectLeft   = Math.max(this.x,    rectB.x);
-    
-        var intersectWidth  = intersectRight - intersectLeft;
-        var intersectHeight = intersectBottom - intersectTop;
-    
-        if (intersectWidth > 0 && intersectHeight > 0) {
-            return new Rect(intersectLeft, intersectTop, intersectWidth, intersectHeight);
+    intersects(shape) {
+        if (shape instanceof Rect) {
+            var intersectTop = Math.max(this.y, rectB.y);
+            var intersectRight = Math.min(this.x2, rectB.x2);
+            var intersectBottom = Math.min(this.y2, rectB.y2);
+            var intersectLeft = Math.max(this.x, rectB.x);
+
+            var intersectWidth = intersectRight - intersectLeft;
+            var intersectHeight = intersectBottom - intersectTop;
+
+            if (intersectWidth > 0 && intersectHeight > 0) {
+                return new Rect(intersectLeft, intersectTop, intersectWidth, intersectHeight);
+            }
+        } else if (shape instanceof Circle) {
+            return shape.intersects(this);
+        } else if (shape instanceof Triangle) {
+
         }
     }
 
@@ -1468,35 +1620,35 @@ class Rect extends Shape {
 }
 
 class Widget extends Rect {
-    constructor(config={}) {
-        super(config.x=0, config.y=0, config.width=100, config.height=100);
+    constructor(config = {}) {
+        super(config.x = 0, config.y = 0, config.width = 100, config.height = 100);
         this.$render = false;
         this.$update = false;
 
-        if(config.update && typeof config.update === "function") {
+        if (config.update && typeof config.update === "function") {
             this.$update = config.update.bind(this);
         }
 
-        if(config.draw && typeof config.draw === "function") {
+        if (config.draw && typeof config.draw === "function") {
             this.$draw = config.draw.bind(this);
         }
     }
 
     update() {
-        if(this.$update) {
+        if (this.$update) {
             this.$update();
         }
     }
 
     render(canv) {
-        if(this.$draw) {
+        if (this.$draw) {
             this.$draw(canv);
         }
     }
 }
 
 class Gradient extends Rect {
-    constructor(colors, x=0, y=0, width=100, height=100, dir="linear") {
+    constructor(colors, x = 0, y = 0, width = 100, height = 100, dir = "linear") {
         super(x, y, width, height);
         this.dir = dir;
         this.colors = colors || [Color.white, Color.black];
@@ -1513,24 +1665,24 @@ class Gradient extends Rect {
     }
 
     render(canv) {
-        const point = this.$point ||  new Vector(this.pos.x + (this.width / 2), this.pos.y + (this.height / 2));
+        const point = this.$point || new Vector(this.pos.x + (this.width / 2), this.pos.y + (this.height / 2));
         this.count = this.height * 2;
         let len = 0;
-        if(this.dir === "linear") {
+        if (this.dir === "linear") {
             len = this.colors.length;
-        } else if(this.dir === "round") {
+        } else if (this.dir === "round") {
             len = 4;
         }
         const count = this.count / len;
         const dist = new Vector(
-            this.width/(count-1),
-            this.height/(count-1)
+            this.width / (count - 1),
+            this.height / (count - 1)
         );
         let cur = 0;
 
-        for(let j = 0; j < len; j++) {
-            for(let i = 0; i < count; i++) {
-                if(this.dir === "linear") {
+        for (let j = 0; j < len; j++) {
+            for (let i = 0; i < count; i++) {
+                if (this.dir === "linear") {
                     const chunk = this.height / len;
                     const sep_chunk = chunk / count;
                     const y = this.pos.y + (chunk * j) + (sep_chunk * i);
@@ -1538,42 +1690,42 @@ class Gradient extends Rect {
                     this.temp.y1 = y;
                     this.temp.x2 = this.pos.x + this.width;
                     this.temp.y2 = y;
-                } else if(this.dir === "round") {
-                    if(j === 0) {
+                } else if (this.dir === "round") {
+                    if (j === 0) {
                         this.temp.x1 = this.pos.x + (dist.x * i);
                         this.temp.y1 = this.pos.y;
-                    } else if(j === 1) {
+                    } else if (j === 1) {
                         this.temp.x1 = this.pos.x + this.width;
                         this.temp.y1 = this.pos.y + (dist.y * i);
-                    } else if(j === 2) {
+                    } else if (j === 2) {
                         this.temp.x1 = this.pos.x + (this.width - dist.x * i);
                         this.temp.y1 = this.pos.y + this.height;
-                    } else if(j === 3) {
+                    } else if (j === 3) {
                         this.temp.x1 = this.pos.x;
                         this.temp.y1 = this.pos.y + (this.height - dist.y * i);
                     }
-                    
+
                     this.temp.x2 = point.x;
                     this.temp.y2 = point.y;
                 }
-                 
-                let f,t,r,g,b;
-                if(this.dir === "linear") {
 
-                    const div = (this.colors.length-1) / 2;
-                    const fromIndex = Math.round(j < div / 2 ? j : j-1);
-                    const toIndex = Math.round(j >= div / 2 ? j : j+1);
+                let f, t, r, g, b;
+                if (this.dir === "linear") {
+
+                    const div = (this.colors.length - 1) / 2;
+                    const fromIndex = Math.round(j < div / 2 ? j : j - 1);
+                    const toIndex = Math.round(j >= div / 2 ? j : j + 1);
                     f = this.colors[fromIndex];
                     t = this.colors[toIndex];
-                    r = canv.map(cur, 0, this.count-1, f.r, t.r);
-                    g = canv.map(cur, 0, this.count-1, f.g, t.g);
-                    b = canv.map(cur, 0, this.count-1, f.b, t.b);
+                    r = canv.map(cur, 0, this.count - 1, f.r, t.r);
+                    g = canv.map(cur, 0, this.count - 1, f.g, t.g);
+                    b = canv.map(cur, 0, this.count - 1, f.b, t.b);
 
-                    
 
-                } else if(this.dir === "round") {
+
+                } else if (this.dir === "round") {
                     f = this.colors[j];
-                    t = this.colors[j >= this.colors.length-1 ? 0 : j+1];
+                    t = this.colors[j >= this.colors.length - 1 ? 0 : j + 1];
                     r = canv.map(i, 0, count, f.r, t.r);
                     g = canv.map(i, 0, count, f.g, t.g);
                     b = canv.map(i, 0, count, f.b, t.b);
@@ -1616,6 +1768,27 @@ class Circle extends Shape {
 
     contains(x, y) {
         return ((x - this.x) * (x - this.x) + (y - this.y) * (y - this.y) <= this.radius * this.radius);
+    }
+
+    intersects(shape) {
+        if (shape instanceof Circle) {
+            const distSq = (this.x - shape.x) * (this.x - shape.x) +
+                (this.y - shape.y) * (this.y - shape.y);
+            const radSumSq = (this.radius + shape.radius) * (this.radius + shape.radius);
+            if (distSq == radSumSq) {
+                return false;
+            } else if (distSq > radSumSq) {
+                return false;
+            } else {
+                return true;
+            }
+        } else if (shape instanceof Rect) {
+            const deltaX = this.x - Math.max(shape.x, Math.min(this.x, shape.x + shape.width));
+            const deltaY = this.y - Math.max(shape.y, Math.min(this.y, shape.y + shape.height));
+            return (deltaX * deltaX + deltaY * deltaY) < (this.radius * this.radius);
+        } else if (shape instanceof Triangle) {
+
+        }
     }
 
     get center() {
@@ -1788,34 +1961,61 @@ class BarGraph extends ShapeGroup {
 }
 
 class Grid extends ShapeGroup {
-    constructor(x, y, width, height, rows, cols) {
+    constructor(x, y, width, height, cols, rows) {
         super([]);
         this.cells = [];
-
+        this.hasRotated = false;
         this.rows = rows;
         this.cols = cols;
         const cw = width / this.cols;
         const ch = height / this.rows;
         const white = new Color(255);
         const black = new Color(0);
-
-        for (let i = 0; i < cols; i++) {
-            for (let j = 0; j < rows; j++) {
-                const cx = x + (i * cw);
-                const cy = y + (j * ch);
-                const cell = new Rect(cx, cy, cw, ch);
-                cell.posx = i;
-                cell.posy = j;
-                cell.color = white;
-                cell.setStroke(1, black);
-                this.cells.push(cell);
-            }
+        for (let i = 0; i < this.rows * this.cols; i++) {
+            const xpos = Math.floor(i % this.cols); // % is the "modulo operator", the remainder of i / width;
+            const ypos = Math.floor(i / this.cols);
+            const cx = x + (xpos * cw);
+            const cy = y + (ypos * ch);
+            const cell = new Rect(cx, cy, cw, ch);
+            cell.posx = xpos;
+            cell.posy = ypos;
+            cell.color = white;
+            cell.$newpos = new Vector(cell.posx, cell.posy);
+            cell.setStroke(1, black);
+            this.cells.push(cell);
         }
         this.shapes = this.cells;
     }
 
     cell(x, y) {
-        return this.cells[this.cols * x + y];
+        return this.cells.filter(c => c.posx === x && c.posy === y)[0];
+    }
+
+    rotate(count = 1) {
+        for (let c = 0; c < count; c++) {
+            const clone = JSON.parse(JSON.stringify(this.cells));
+            var newGrid = [];
+            var rowLength = Math.sqrt(this.cells.length);
+            newGrid.length = this.cells.length
+
+            for (var i = 0; i < this.cells.length; i++) {
+                //convert to x/y
+                var x = this.cells[i].$newpos.x;
+                var y = this.cells[i].$newpos.y;
+
+                //find new x/y
+                var newX = rowLength - y - 1;
+                var newY = x;
+
+                //convert back to index
+                var newPosition = newY * rowLength + newX;
+                newGrid[newPosition] = this.cells[i];
+                newGrid[newPosition].setPos(clone[newPosition].pos.x, clone[newPosition].pos.y);
+                newGrid[newPosition].$newpos = new Vector(newX, newY);
+            }
+
+            this.cells = newGrid;
+        }
     }
 }
 
@@ -1928,6 +2128,8 @@ class Canv {
         this.mouseOver = true;
         this.mouseUp = false;
         this.clicked = false;
+        this.cursor = "default";
+
         this.keyframeStart = false;
 
 
@@ -2298,6 +2500,10 @@ class Canv {
         return this;
     }
 
+    setCursor(cursor) {
+        this.cursor = cursor;
+    }
+
     write(str, x, y) {
         if (x === undefined) {
             x = this.halfWidth();
@@ -2314,6 +2520,7 @@ class Canv {
     $loop(timestamp) {
         if (this.$running) {
             this.frames++;
+            this.cursor = "default";
 
             if (this.$update && (this.$updateDelay === 0 || this.frames % this.$updateDelay === 0)) {
                 if (this.$update) this.$update(this.frames, timestamp);
@@ -2329,6 +2536,9 @@ class Canv {
             if (this.mouseUp) {
                 this.mouseUp = false;
             }
+
+            this.canvas.style.cursor = this.cursor;
+            this.cursor = "default";
 
             requestAnimationFrame(this.$loop.bind(this));
         }
@@ -2390,7 +2600,7 @@ class Canv {
                 if (arguments.length > 1) {
                     config.shape = arguments[0];
                     config.vals = arguments[1];
-                    config.duration = arguments[2];
+                    config.duration = arguments[2] || 1000;
                     config.ease = arguments[3] || "linear";
                     config.callback = arguments[4] || (() => {});
                 }
