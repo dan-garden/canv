@@ -52,7 +52,9 @@ class Microphone {
         window.AudioContext = window.AudioContext || window.webkitAudioContext;
         navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia;
         // now just wait until the microphone is fired up
-        this.init();
+        window.onload = () => {
+            this.init();
+        }
     }
 
     init() {
