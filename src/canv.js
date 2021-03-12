@@ -747,6 +747,10 @@ class Palette {
         this.colors.push(color);
     }
 
+    get(i) {
+        return this.colors[i];
+    }
+
     get current() {
         return this.colors[this.index];
     }
@@ -762,6 +766,12 @@ class Palette {
         }
 
         return p;
+    }
+    
+    static random(count) {
+        return new Palette(new Array(count).fill(69).map(color => {
+            return Color.random();
+        }));
     }
 
     get average() {
@@ -1768,6 +1778,22 @@ class Circle extends Shape {
 
     contains(x, y) {
         return ((x - this.x) * (x - this.x) + (y - this.y) * (y - this.y) <= this.radius * this.radius);
+    }
+
+    getPoints(count=10) {
+        const points = [];
+
+        for(let i = 0; i < count; i++) {
+            const g = Math.round(360 / count) * i;
+            const a = g * (Math.PI/180);
+            const x = this.x + this.radius * Math.cos(a);
+            const y = this.y + this.radius * Math.sin(a);
+    
+            const vector = new Vector(x, y)
+            points.push(vector);
+        }
+
+        return points;
     }
 
     intersects(shape) {
